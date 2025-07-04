@@ -70,6 +70,7 @@
       activeTab: 'dashboard',
       mobileMenuOpen: false,
       isAdmin: false,
+      adminRole: 'viewer', // 'super', 'staff', 'viewer'
       showAdminLogin: false,
       adminPassword: '',
       showNewPostForm: false,
@@ -215,7 +216,40 @@
       editingCountdown: false,
       // Homepage customization
       editingHomepageStats: false,
-      editingHomepageInstructors: false
+      editingHomepageInstructors: false,
+      // Live chat feature
+      showChat: false,
+      chatMessages: [
+        {
+          id: 1,
+          sender: 'IVTV Staff',
+          message: 'Welcome! How can we help you today?',
+          timestamp: new Date().toISOString(),
+          isStaff: true
+        }
+      ],
+      newChatMessage: '',
+      chatName: '',
+      chatEmail: '',
+      chatStarted: false,
+      // Admin dashboard
+      showAdminDashboard: false,
+      adminStats: {
+        totalUsers: 145,
+        activeChats: 3,
+        pendingApprovals: 7,
+        systemUptime: '99.8%'
+      },
+      // Livestream feature
+      livestream: {
+        isLive: false,
+        title: 'IVTV Summer Camp Live',
+        description: 'Watch live from our summer camp activities!',
+        streamUrl: '',
+        chatEnabled: true,
+        viewerCount: 0
+      },
+      editingLivestream: false
     };
 
     // --- Load saved state from localStorage if available ---
@@ -240,16 +274,122 @@
     }
 
     // --- State Logic/Setters ---
+    function updateAdminPassword(value) {
+      state.adminPassword = value;
+    }
+
     function handleAdminLogin() {
       if (state.adminPassword === 'IVTVRules123!') {
-        setState({isAdmin: true, showAdminLogin: false, adminPassword: ''});
+        setState({isAdmin: true, showAdminLogin: false, adminPassword: '', adminRole: 'super'});
+      } else if (state.adminPassword === 'IVTVStaff2025') {
+        setState({isAdmin: true, showAdminLogin: false, adminPassword: '', adminRole: 'staff'});
       } else {
         alert('Incorrect password');
       }
     }
 
     function handleAdminLogout() { 
-      setState({isAdmin: false, activeTab: 'dashboard'}); 
+      setState({isAdmin: false, adminRole: 'viewer', activeTab: 'dashboard', showAdminDashboard: false}); 
+    }
+
+    // Live chat handlers
+    function startChat(form) {
+      const formData = Object.fromEntries(new FormData(form));
+      setState({
+        chatName: formData.name,
+        chatEmail: formData.email,
+        chatStarted: true
+      });
+    }
+
+    function sendChatMessage() {
+      if (!state.newChatMessage.trim()) return;
+      
+      const newMessage = {
+        id: state.chatMessages.length + 1,
+        sender: state.chatName || 'Guest',
+        message: state.newChatMessage,
+        timestamp: new Date().toISOString(),
+        isStaff: false
+      };
+      
+      setState({
+        chatMessages: [...state.chatMessages, newMessage],
+        newChatMessage: ''
+      });
+      
+      // Auto-reply from staff (simulated)
+      setTimeout(() => {
+        const staffReply = {
+          id: state.chatMessages.length + 2,
+          sender: 'IVTV Staff',
+          message: 'Thanks for your message! We\'ll get back to you shortly.',
+          timestamp: new Date().toISOString(),
+          isStaff: true
+        };
+        setState({
+          chatMessages: [...state.chatMessages, staffReply]
+        });
+      }, 2000);
+    }
+
+    function sendStaffMessage(message) {
+      if (!message.trim()) return;
+      
+      const staffMessage = {
+        id: state.chatMessages.length + 1,
+        sender: 'IVTV Staff',
+        message: message,
+        timestamp: new Date().toISOString(),
+        isStaff: true
+      };
+      
+      setState({
+        chatMessages: [...state.chatMessages, staffMessage]
+      });
+    }
+
+    // Permission checking
+    function canEdit(feature) {
+      if (!state.isAdmin) return false;
+      if (state.adminRole === 'super') return true;
+      if (state.adminRole === 'staff') {
+        return ['posts', 'files', 'homepage', 'chat'].includes(feature);
+      }
+      return false;
+    }
+
+    function canDelete(feature) {
+      if (!state.isAdmin) return false;
+      if (state.adminRole === 'super') return true;
+      if (state.adminRole === 'staff' && feature === 'posts') return true;
+      return false;
+    }
+
+    // Livestream handlers
+    function handleEditLivestream(form) {
+      const formData = Object.fromEntries(new FormData(form));
+      setState({
+        livestream: {
+          ...state.livestream,
+          title: formData.title,
+          description: formData.description,
+          streamUrl: formData.streamUrl,
+          isLive: formData.isLive === 'on',
+          chatEnabled: formData.chatEnabled === 'on'
+        },
+        editingLivestream: false
+      });
+    }
+
+    function toggleLivestream() {
+      setState({
+        livestream: {
+          ...state.livestream,
+          isLive: !state.livestream.isLive,
+          viewerCount: state.livestream.isLive ? 0 : Math.floor(Math.random() * 50) + 10
+        }
+      });
     }
 
     function handleNewPost(form) {
@@ -537,21 +677,26 @@
       ];
 
       const extraTabs = [
+        {tab: 'livestream', label: 'Live Stream', icon: SVG.Video},
         {tab: 'recapShorts', label: 'Recap Shorts', icon: SVG.Video},
         {tab: 'studentVideos', label: 'Student Videos', icon: SVG.Camera},
         {tab: 'studentGallery', label: 'Gallery', icon: SVG.FileText},
         {tab: 'weekExpect', label: 'Weeks', icon: SVG.Calendar}
       ];
 
-      const allTabs = [...mainTabs, ...extraTabs];
+      const adminTabs = state.isAdmin ? [
+        {tab: 'adminDashboard', label: 'Admin Panel', icon: SVG.Users}
+      ] : [];
+
+      const allTabs = [...mainTabs, ...extraTabs, ...adminTabs];
 
       return `
         <nav class="bg-gray-900 text-white p-4 sticky top-0 z-50">
           <div class="max-w-6xl mx-auto flex justify-between items-center">
             <div class="flex items-center space-x-4">
               <div class="text-xl font-bold text-red-500">IVTV</div>
-              <div class="text-sm text-gray-300">Summer Camp 2025</div>
-              ${state.isAdmin ? `<div class="text-xs bg-red-600 px-2 py-1 rounded">ADMIN</div>` : ""}
+              <div class="text-sm text-gray-300 ml-2">Summer Camp 2025</div>
+              ${state.isAdmin ? `<div class="text-xs bg-red-600 px-2 py-1 rounded ml-2">ADMIN</div>` : ""}
             </div>
             <div class="hidden md:flex space-x-6">
               ${allTabs.map(({tab, label, icon}) => `
@@ -821,6 +966,43 @@
                   `).join('')}
                 </div>
               `}
+            </div>
+          </div>
+
+          <!-- Livestream Widget -->
+          <div class="mt-8 bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl p-6 text-white">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-4">
+                <div class="bg-white/20 p-3 rounded-lg">
+                  ${SVG.Video}
+                </div>
+                <div>
+                  <h3 class="text-xl font-bold">Live Stream</h3>
+                  <p class="text-purple-200">Watch live camp activities and events</p>
+                </div>
+              </div>
+              <div class="text-right">
+                ${state.livestream.isLive ? `
+                  <div class="flex items-center space-x-2 mb-2">
+                    <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                    <span class="font-semibold">LIVE NOW</span>
+                  </div>
+                  <p class="text-sm text-purple-200">${state.livestream.viewerCount} viewers</p>
+                ` : `
+                  <div class="text-sm text-purple-200 mb-2">Currently Offline</div>
+                  <p class="text-xs text-purple-300">Check back later for live content</p>
+                `}
+              </div>
+            </div>
+            <div class="mt-4 flex space-x-3">
+              <button onclick="setState({activeTab: 'livestream'})" 
+                      class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors">
+                ${state.livestream.isLive ? 'Watch Now' : 'View Stream Page'}
+              </button>
+              <button onclick="setState({showChat: true})" 
+                      class="bg-transparent border border-white/30 hover:bg-white/10 px-4 py-2 rounded-lg transition-colors">
+                Contact Us
+              </button>
             </div>
           </div>
         </div>
@@ -1571,8 +1753,8 @@
               <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
                 <input type="password" 
-                       value="${state.adminPassword}" 
-                       onchange="setState({adminPassword: this.value})"
+                       id="admin-password-input"
+                       oninput="updateAdminPassword(this.value)"
                        class="w-full border border-gray-300 rounded-md px-3 py-2" 
                        required>
               </div>
@@ -1639,6 +1821,386 @@
       `;
     }
 
+    // Livestream component
+    function Livestream() {
+      return `
+        <div class="p-6">
+          <div class="flex justify-between items-center mb-6">
+            <div class="flex items-center space-x-3">
+              <h2 class="text-2xl font-bold">Live Stream</h2>
+              ${state.livestream.isLive ? `
+                <div class="flex items-center space-x-2 bg-red-600 text-white px-3 py-1 rounded-full text-sm">
+                  <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                  <span>LIVE</span>
+                </div>
+              ` : `
+                <div class="bg-gray-500 text-white px-3 py-1 rounded-full text-sm">OFFLINE</div>
+              `}
+            </div>
+            ${canEdit('livestream') ? `
+              <div class="flex space-x-2">
+                <button onclick="toggleLivestream()" 
+                        class="bg-${state.livestream.isLive ? 'red' : 'green'}-600 text-white px-4 py-2 rounded-md hover:bg-${state.livestream.isLive ? 'red' : 'green'}-700">
+                  ${state.livestream.isLive ? 'Stop Stream' : 'Go Live'}
+                </button>
+                <button onclick="setState({editingLivestream: true})" 
+                        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                  Settings
+                </button>
+              </div>
+            ` : ''}
+          </div>
+
+          ${state.editingLivestream ? `
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+              <h3 class="text-lg font-semibold mb-4">Livestream Settings</h3>
+              <form onsubmit="event.preventDefault(); handleEditLivestream(event.target);">
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Stream Title</label>
+                    <input type="text" name="title" value="${state.livestream.title}" 
+                           class="w-full border border-gray-300 rounded-md px-3 py-2" required>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea name="description" rows="3" class="w-full border border-gray-300 rounded-md px-3 py-2">${state.livestream.description}</textarea>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Stream URL (YouTube/Twitch)</label>
+                    <input type="url" name="streamUrl" value="${state.livestream.streamUrl}" 
+                           placeholder="https://youtube.com/embed/..." 
+                           class="w-full border border-gray-300 rounded-md px-3 py-2">
+                  </div>
+                  <div class="flex items-center space-x-4">
+                    <label class="flex items-center">
+                      <input type="checkbox" name="isLive" ${state.livestream.isLive ? 'checked' : ''} class="mr-2">
+                      Stream is Live
+                    </label>
+                    <label class="flex items-center">
+                      <input type="checkbox" name="chatEnabled" ${state.livestream.chatEnabled ? 'checked' : ''} class="mr-2">
+                      Enable Chat
+                    </label>
+                  </div>
+                  <div class="flex space-x-2">
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Save Settings</button>
+                    <button type="button" onclick="setState({editingLivestream: false})" 
+                            class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400">Cancel</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          ` : ''}
+
+          <div class="grid lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2">
+              <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                ${state.livestream.isLive && state.livestream.streamUrl ? `
+                  <div class="aspect-video">
+                    <iframe src="${state.livestream.streamUrl}" 
+                            class="w-full h-full" 
+                            frameborder="0" 
+                            allowfullscreen>
+                    </iframe>
+                  </div>
+                ` : `
+                  <div class="aspect-video bg-gray-900 flex items-center justify-center">
+                    <div class="text-center text-white">
+                      ${SVG.VideoLarge}
+                      <h3 class="text-xl font-semibold mt-4">${state.livestream.title}</h3>
+                      <p class="text-gray-300 mt-2">${state.livestream.description}</p>
+                      ${!state.livestream.isLive ? `
+                        <p class="text-red-400 mt-4">Stream is currently offline</p>
+                      ` : `
+                        <p class="text-red-400 mt-4">Configure stream URL in settings</p>
+                      `}
+                    </div>
+                  </div>
+                `}
+                
+                <div class="p-4">
+                  <h3 class="text-lg font-semibold mb-2">${state.livestream.title}</h3>
+                  <p class="text-gray-600 mb-3">${state.livestream.description}</p>
+                  
+                  <div class="flex items-center justify-between text-sm text-gray-500">
+                    <div class="flex items-center space-x-4">
+                      ${state.livestream.isLive ? `
+                        <span class="flex items-center space-x-1">
+                          <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                          <span>Live now</span>
+                        </span>
+                        <span>${state.livestream.viewerCount} viewers</span>
+                      ` : `
+                        <span>Last streamed: Today</span>
+                      `}
+                    </div>
+                    <div class="flex items-center space-x-2">
+                      <button class="flex items-center space-x-1 hover:text-red-600">
+                        ${SVG.Heart}
+                        <span>45</span>
+                      </button>
+                      <button class="flex items-center space-x-1 hover:text-red-600">
+                        ${SVG.Share2}
+                        <span>Share</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            ${state.livestream.chatEnabled ? `
+              <div class="bg-white rounded-lg shadow-sm">
+                <div class="p-4 border-b">
+                  <h4 class="font-semibold">Live Chat</h4>
+                </div>
+                <div class="h-64 overflow-y-auto p-4 space-y-3">
+                  <div class="text-sm">
+                    <span class="font-medium text-red-600">StreamMod:</span>
+                    <span class="text-gray-700">Welcome to the IVTV Summer Camp livestream!</span>
+                  </div>
+                  <div class="text-sm">
+                    <span class="font-medium text-blue-600">Parent_Sarah:</span>
+                    <span class="text-gray-700">Great to see the kids having fun!</span>
+                  </div>
+                  <div class="text-sm">
+                    <span class="font-medium text-green-600">Dad_Mike:</span>
+                    <span class="text-gray-700">Amazing lighting setup 👏</span>
+                  </div>
+                </div>
+                <div class="p-4 border-t">
+                  <div class="flex space-x-2">
+                    <input type="text" placeholder="Type a message..." 
+                           class="flex-1 border border-gray-300 rounded px-3 py-2 text-sm">
+                    <button class="bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 text-sm">
+                      Send
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ` : `
+              <div class="bg-white rounded-lg shadow-sm p-6">
+                <h4 class="font-semibold mb-4">Stream Information</h4>
+                <div class="space-y-3 text-sm">
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Status:</span>
+                    <span class="${state.livestream.isLive ? 'text-red-600' : 'text-gray-500'}">${state.livestream.isLive ? 'Live' : 'Offline'}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Viewers:</span>
+                    <span>${state.livestream.viewerCount}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Chat:</span>
+                    <span>${state.livestream.chatEnabled ? 'Enabled' : 'Disabled'}</span>
+                  </div>
+                </div>
+                
+                <div class="mt-6">
+                  <h5 class="font-medium mb-2">Quick Actions</h5>
+                  <div class="space-y-2">
+                    <button onclick="setState({showChat: true})" 
+                            class="w-full text-left p-2 hover:bg-gray-50 rounded border text-sm">
+                      💬 Contact Support
+                    </button>
+                    <button onclick="setState({activeTab: 'studentGallery'})" 
+                            class="w-full text-left p-2 hover:bg-gray-50 rounded border text-sm">
+                      📸 View Photo Gallery
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `}
+          </div>
+        </div>
+      `;
+    }
+
+    // Live Chat Widget
+    function LiveChatWidget() {
+      return `
+        <div class="fixed bottom-4 right-4 z-40">
+          ${state.showChat ? `
+            <div class="bg-white rounded-lg shadow-lg w-80 h-96 flex flex-col">
+              <div class="bg-red-600 text-white p-4 rounded-t-lg flex justify-between items-center">
+                <h4 class="font-semibold">Live Chat - IVTV Support</h4>
+                <button onclick="setState({showChat: false})" class="text-white hover:text-gray-200">
+                  ${SVG.X}
+                </button>
+              </div>
+              
+              ${!state.chatStarted ? `
+                <div class="p-4 flex-1">
+                  <p class="text-sm text-gray-600 mb-4">Please provide your details to start chatting:</p>
+                  <form onsubmit="event.preventDefault(); startChat(event.target);">
+                    <div class="space-y-3">
+                      <input type="text" name="name" placeholder="Your Name" 
+                             class="w-full border border-gray-300 rounded px-3 py-2 text-sm" required>
+                      <input type="email" name="email" placeholder="Your Email" 
+                             class="w-full border border-gray-300 rounded px-3 py-2 text-sm" required>
+                      <button type="submit" 
+                              class="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700 text-sm">
+                        Start Chat
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              ` : `
+                <div class="flex-1 p-3 overflow-y-auto space-y-2" style="max-height: 280px;">
+                  ${state.chatMessages.map(msg => `
+                    <div class="flex ${msg.isStaff ? 'justify-start' : 'justify-end'}">
+                      <div class="max-w-xs px-3 py-2 rounded-lg text-sm ${
+                        msg.isStaff 
+                          ? 'bg-gray-100 text-gray-800' 
+                          : 'bg-red-600 text-white'
+                      }">
+                        <div class="font-medium text-xs mb-1">${msg.sender}</div>
+                        <div>${msg.message}</div>
+                        <div class="text-xs opacity-70 mt-1">${new Date(msg.timestamp).toLocaleTimeString()}</div>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+                
+                <div class="p-3 border-t">
+                  <div class="flex space-x-2">
+                    <input type="text" 
+                           value="${state.newChatMessage}"
+                           oninput="state.newChatMessage = this.value"
+                           onkeypress="if(event.key==='Enter') sendChatMessage()"
+                           placeholder="Type a message..." 
+                           class="flex-1 border border-gray-300 rounded px-3 py-2 text-sm">
+                    <button onclick="sendChatMessage()" 
+                            class="bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 text-sm">
+                      Send
+                    </button>
+                  </div>
+                </div>
+              `}
+            </div>
+          ` : `
+            <button onclick="setState({showChat: true})" 
+                    class="bg-red-600 text-white p-4 rounded-full shadow-lg hover:bg-red-700 flex items-center space-x-2">
+              ${SVG.MessageCircle}
+              <span class="hidden sm:inline">Chat with us</span>
+            </button>
+          `}
+        </div>
+      `;
+    }
+
+    // Admin Dashboard
+    function AdminDashboard() {
+      if (!state.isAdmin) return '';
+      
+      return `
+        <div class="p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">Admin Dashboard</h2>
+            <div class="flex items-center space-x-3">
+              <span class="text-sm text-gray-600">Role: ${state.adminRole.toUpperCase()}</span>
+              <button onclick="handleAdminLogout()" 
+                      class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">
+                Logout
+              </button>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <h3 class="text-lg font-semibold mb-2">Total Users</h3>
+              <p class="text-3xl font-bold text-blue-600">${state.adminStats.totalUsers}</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <h3 class="text-lg font-semibold mb-2">Active Chats</h3>
+              <p class="text-3xl font-bold text-green-600">${state.adminStats.activeChats}</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <h3 class="text-lg font-semibold mb-2">Pending Approvals</h3>
+              <p class="text-3xl font-bold text-orange-600">${state.adminStats.pendingApprovals}</p>
+            </div>
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <h3 class="text-lg font-semibold mb-2">System Uptime</h3>
+              <p class="text-3xl font-bold text-purple-600">${state.adminStats.systemUptime}</p>
+            </div>
+          </div>
+
+          ${state.adminRole === 'super' ? `
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+              <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
+                <div class="space-y-2">
+                  <button onclick="setState({activeTab: 'community', showNewPostForm: true})" 
+                          class="w-full text-left p-3 hover:bg-gray-50 rounded border">
+                    ${SVG.Plus} Create New Post
+                  </button>
+                  <button onclick="setState({activeTab: 'files', showNewFileForm: true})" 
+                          class="w-full text-left p-3 hover:bg-gray-50 rounded border">
+                    ${SVG.Upload} Upload New File
+                  </button>
+                  <button onclick="setState({activeTab: 'calendar', showNewCalendarWeekForm: true})" 
+                          class="w-full text-left p-3 hover:bg-gray-50 rounded border">
+                    ${SVG.Calendar} Add Calendar Week
+                  </button>
+                </div>
+              </div>
+              
+              <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold mb-4">Live Chat Management</h3>
+                <div class="space-y-3">
+                  <div class="text-sm text-gray-600">Recent Messages: ${state.chatMessages.length}</div>
+                  <div class="space-y-2">
+                    <button onclick="sendStaffMessage('Hello! How can we help you today?')" 
+                            class="w-full text-left p-2 hover:bg-gray-50 rounded border text-sm">
+                      Send Welcome Message
+                    </button>
+                    <button onclick="sendStaffMessage('Thank you for contacting IVTV Summer Camp!')" 
+                            class="w-full text-left p-2 hover:bg-gray-50 rounded border text-sm">
+                      Send Thank You
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ` : `
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+              <h3 class="text-lg font-semibold mb-4">Staff Actions</h3>
+              <div class="grid md:grid-cols-2 gap-4">
+                <button onclick="setState({activeTab: 'community', showNewPostForm: true})" 
+                        class="p-4 text-left hover:bg-gray-50 rounded border">
+                  ${SVG.Plus} Create New Post
+                </button>
+                <button onclick="setState({activeTab: 'files', showNewFileForm: true})" 
+                        class="p-4 text-left hover:bg-gray-50 rounded border">
+                  ${SVG.Upload} Upload New File
+                </button>
+              </div>
+            </div>
+          `}
+          
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <h3 class="text-lg font-semibold mb-4">Recent Activity</h3>
+            <div class="space-y-3">
+              <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded">
+                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span class="text-sm">New post created: "Day 1: Camera Basics Workshop"</span>
+                <span class="text-xs text-gray-500 ml-auto">2 hours ago</span>
+              </div>
+              <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded">
+                <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span class="text-sm">File uploaded: "Camp_Schedule_Week1.pdf"</span>
+                <span class="text-xs text-gray-500 ml-auto">4 hours ago</span>
+              </div>
+              <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded">
+                <div class="w-2 h-2 bg-orange-500 rounded-full"></div>
+                <span class="text-sm">Calendar updated: New week added</span>
+                <span class="text-xs text-gray-500 ml-auto">1 day ago</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
     // Main render function
     function renderApp() {
       const content = (() => {
@@ -1647,10 +2209,12 @@
           case 'community': return Community();
           case 'files': return Files();
           case 'calendar': return Calendar();
+          case 'livestream': return Livestream();
           case 'recapShorts': return RecapShorts();
           case 'studentVideos': return StudentVideos();
           case 'studentGallery': return StudentGallery();
           case 'weekExpect': return WeekExpect();
+          case 'adminDashboard': return AdminDashboard();
           default: return Dashboard();
         }
       })();
@@ -1662,6 +2226,7 @@
         </main>
         ${AdminLoginModal()}
         ${ExpandedPostModal()}
+        ${LiveChatWidget()}
       `;
     }
 
