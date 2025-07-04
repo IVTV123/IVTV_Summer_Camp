@@ -65,6 +65,24 @@
       return state.campCalendar && state.campCalendar[state.campCalendar.length - 1] || null;
     }
 
+    // Get random video idea
+    function getRandomVideoIdea() {
+      const ideas = state.videoIdeas;
+      if (!ideas || ideas.length === 0) return null;
+      
+      // Get a random idea that's different from the current one if possible
+      let randomIndex;
+      if (ideas.length > 1 && state.currentVideoIdea) {
+        do {
+          randomIndex = Math.floor(Math.random() * ideas.length);
+        } while (ideas[randomIndex].id === state.currentVideoIdea.id);
+      } else {
+        randomIndex = Math.floor(Math.random() * ideas.length);
+      }
+      
+      setState({ currentVideoIdea: ideas[randomIndex] });
+    }
+
     // --- State ---
     const state = {
       activeTab: 'dashboard',
@@ -77,6 +95,24 @@
       showNewFileForm: false,
       editingPost: null,
       expandedPost: null,
+      mediaLibrary: [
+        { id: 1, type: 'image', name: 'Campus Overview', url: 'https://placehold.co/800x600', uploadDate: '2025-07-01' },
+        { id: 2, type: 'image', name: 'Students Working', url: 'https://placehold.co/800x600', uploadDate: '2025-07-02' },
+        { id: 3, type: 'video', name: 'Welcome Video', url: 'https://example.com/video1.mp4', uploadDate: '2025-07-03' }
+      ],
+      showMediaUploader: false,
+      editingMediaId: null,
+      
+      // Announcement Banner
+      announcementBanner: {
+        enabled: true,
+        text: "Welcome to IVTV Summer Camp 2025! Registration is now open.",
+        backgroundColor: "#4B5563", // gray-600
+        textColor: "#FFFFFF",
+        linkText: "Register Now",
+        linkUrl: "#"
+      },
+      editingAnnouncementBanner: false,
       homepageHeroTitle: 'Welcome to IVTV Summer Camp',
       homepageHeroSubtitle: 'Professional TV Production Training • Summer 2025',
       homepageBoxes: [
@@ -88,6 +124,22 @@
           bottomValue: () => state.files.length
         }
       ],
+      // Video Ideas feature
+      videoIdeas: [
+        { id: 1, title: "A Day in the Life", description: "Follow a camper through their daily activities at IVTV Camp." },
+        { id: 2, title: "Interview a Mentor", description: "Create a professional interview with one of the camp instructors." },
+        { id: 3, title: "Behind the Scenes", description: "Show what happens behind the camera during a production." },
+        { id: 4, title: "Camp News Report", description: "Create a news segment about recent camp activities." },
+        { id: 5, title: "Equipment Tutorial", description: "Teach viewers how to use a specific piece of equipment." },
+        { id: 6, title: "Nature Documentary", description: "Film the natural surroundings of the camp in documentary style." },
+        { id: 7, title: "Comedy Skit", description: "Write and perform a short comedy sketch with fellow campers." },
+        { id: 8, title: "Music Video", description: "Create a music video for your favorite song." },
+        { id: 9, title: "Camp Commercial", description: "Produce a 30-second commercial promoting IVTV Summer Camp." },
+        { id: 10, title: "Silent Film", description: "Tell a story without dialogue, using only visuals and music." },
+        { id: 11, title: "Time Lapse Project", description: "Create a time lapse video of a camp activity or natural scene." },
+        { id: 12, title: "Mockumentary", description: "Film a fake documentary about an imaginary camp event." }
+      ],
+      currentVideoIdea: null,
       instructors: [
         { name: "Sarah Johnson", title: "Camera & Lighting Specialist", initial: "S" },
         { name: "Mike Chen", title: "Audio & Post-Production", initial: "M" }
@@ -276,6 +328,21 @@
     // --- State Logic/Setters ---
     function updateAdminPassword(value) {
       state.adminPassword = value;
+    }
+
+    function handleSaveAnnouncementBanner(form) {
+      const formData = new FormData(form);
+      setState({
+        announcementBanner: {
+          enabled: formData.has('enabled'),
+          text: formData.get('text'),
+          backgroundColor: formData.get('backgroundColor'),
+          textColor: formData.get('textColor'),
+          linkText: formData.get('linkText'),
+          linkUrl: formData.get('linkUrl')
+        },
+        editingAnnouncementBanner: false
+      });
     }
 
     function handleAdminLogin() {
@@ -667,6 +734,103 @@
       return [thisWeekBox, updatesBox, state.homepageBoxes[2]];
     }
 
+    // Announcement Banner component
+    function AnnouncementBanner() {
+      if (!state.announcementBanner.enabled) return '';
+      
+      return `
+        <div class="w-full py-2 px-4" style="background-color: ${state.announcementBanner.backgroundColor}; color: ${state.announcementBanner.textColor};">
+          <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+              ${SVG.Bell}
+              <span>${state.announcementBanner.text}</span>
+              ${state.announcementBanner.linkText ? `
+                <a href="${state.announcementBanner.linkUrl}" class="underline ml-2 font-medium">
+                  ${state.announcementBanner.linkText}
+                </a>
+              ` : ''}
+            </div>
+            ${state.isAdmin ? `
+              <button onclick="setState({editingAnnouncementBanner: true})" 
+                      class="text-sm opacity-70 hover:opacity-100">
+                ${SVG.Edit}
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    // Banner Editor Modal
+    function AnnouncementBannerEditor() {
+      if (!state.editingAnnouncementBanner) return '';
+      
+      return `
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-semibold">Edit Announcement Banner</h3>
+              <button onclick="setState({editingAnnouncementBanner: false})" class="text-gray-500 hover:text-gray-700">
+                ${SVG.X}
+              </button>
+            </div>
+            
+            <form onsubmit="event.preventDefault(); handleSaveAnnouncementBanner(event.target);">
+              <div class="space-y-4">
+                <div class="flex items-center">
+                  <input type="checkbox" id="banner-enabled" name="enabled" 
+                         ${state.announcementBanner.enabled ? 'checked' : ''} class="mr-2">
+                  <label for="banner-enabled" class="text-sm font-medium">Enable Banner</label>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Banner Text</label>
+                  <input type="text" name="text" value="${state.announcementBanner.text}" 
+                         class="w-full border border-gray-300 rounded px-3 py-2" required>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Background Color</label>
+                    <input type="color" name="backgroundColor" value="${state.announcementBanner.backgroundColor}" 
+                           class="w-full border border-gray-300 rounded px-1 py-1 h-10">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Text Color</label>
+                    <input type="color" name="textColor" value="${state.announcementBanner.textColor}" 
+                           class="w-full border border-gray-300 rounded px-1 py-1 h-10">
+                  </div>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Link Text (optional)</label>
+                  <input type="text" name="linkText" value="${state.announcementBanner.linkText || ''}" 
+                         class="w-full border border-gray-300 rounded px-3 py-2">
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Link URL (optional)</label>
+                  <input type="text" name="linkUrl" value="${state.announcementBanner.linkUrl || ''}" 
+                         class="w-full border border-gray-300 rounded px-3 py-2">
+                </div>
+                
+                <div class="flex justify-end space-x-2 pt-2">
+                  <button type="button" onclick="setState({editingAnnouncementBanner: false})" 
+                          class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                    Cancel
+                  </button>
+                  <button type="submit" 
+                          class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                    Save
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      `;
+    }
+
     // Navigation component
     function Navigation() {
       const mainTabs = [
@@ -681,7 +845,8 @@
         {tab: 'recapShorts', label: 'Recap Shorts', icon: SVG.Video},
         {tab: 'studentVideos', label: 'Student Videos', icon: SVG.Camera},
         {tab: 'studentGallery', label: 'Gallery', icon: SVG.FileText},
-        {tab: 'weekExpect', label: 'Weeks', icon: SVG.Calendar}
+        {tab: 'weekExpect', label: 'Weeks', icon: SVG.Calendar},
+        {tab: 'videoIdeas', label: 'Video Ideas', icon: SVG.VideoRed}
       ];
 
       const adminTabs = state.isAdmin ? [
@@ -2034,8 +2199,12 @@
                   <form onsubmit="event.preventDefault(); startChat(event.target);">
                     <div class="space-y-3">
                       <input type="text" name="name" placeholder="Your Name" 
+                             value="${state.chatName || ''}"
+                             oninput="setState({chatName: this.value})"
                              class="w-full border border-gray-300 rounded px-3 py-2 text-sm" required>
                       <input type="email" name="email" placeholder="Your Email" 
+                             value="${state.chatEmail || ''}"
+                             oninput="setState({chatEmail: this.value})"
                              class="w-full border border-gray-300 rounded px-3 py-2 text-sm" required>
                       <button type="submit" 
                               class="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700 text-sm">
@@ -2095,7 +2264,7 @@
       return `
         <div class="p-6">
           <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold">Admin Dashboard</h2>
+            <h2 class="text-2xl font-bold">Admin Control Panel</h2>
             <div class="flex items-center space-x-3">
               <span class="text-sm text-gray-600">Role: ${state.adminRole.toUpperCase()}</span>
               <button onclick="handleAdminLogout()" 
@@ -2105,7 +2274,147 @@
             </div>
           </div>
 
-          <div class="grid md:grid-cols-4 gap-6 mb-8">
+          <div class="grid md:grid-cols-3 gap-6 mb-6">
+            <!-- Content Management Section -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <h3 class="text-lg font-semibold mb-4">Content Management</h3>
+              <div class="space-y-2">
+                <button onclick="setState({activeTab: 'community', showNewPostForm: true})" 
+                        class="w-full text-left p-3 hover:bg-gray-50 rounded border flex items-center">
+                  ${SVG.Plus} <span class="ml-2">Create New Post</span>
+                </button>
+                <button onclick="setState({editingAnnouncementBanner: true})" 
+                        class="w-full text-left p-3 hover:bg-gray-50 rounded border flex items-center">
+                  ${SVG.Bell} <span class="ml-2">Edit Announcement Banner</span>
+                </button>
+                <button onclick="setState({activeTab: 'dashboard', editingHomepage: true})" 
+                        class="w-full text-left p-3 hover:bg-gray-50 rounded border flex items-center">
+                  ${SVG.Edit} <span class="ml-2">Edit Homepage</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Media Management Section -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <h3 class="text-lg font-semibold mb-4">Media Management</h3>
+              <div class="space-y-2">
+                <button onclick="setState({activeTab: 'files', showNewFileForm: true})" 
+                        class="w-full text-left p-3 hover:bg-gray-50 rounded border flex items-center">
+                  ${SVG.Upload} <span class="ml-2">Upload Files</span>
+                </button>
+                <button onclick="setState({showMediaUploader: true})" 
+                        class="w-full text-left p-3 hover:bg-gray-50 rounded border flex items-center">
+                  ${SVG.CameraRed} <span class="ml-2">Upload Media (Photos/Videos)</span>
+                </button>
+                <button onclick="setState({activeTab: 'studentGallery', showNewGalleryForm: true})" 
+                        class="w-full text-left p-3 hover:bg-gray-50 rounded border flex items-center">
+                  ${SVG.Camera} <span class="ml-2">Add to Gallery</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Schedule Management Section -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+              <h3 class="text-lg font-semibold mb-4">Schedule Management</h3>
+              <div class="space-y-2">
+                <button onclick="setState({activeTab: 'calendar', showNewCalendarWeekForm: true})" 
+                        class="w-full text-left p-3 hover:bg-gray-50 rounded border flex items-center">
+                  ${SVG.Calendar} <span class="ml-2">Add Calendar Week</span>
+                </button>
+                <button onclick="setState({activeTab: 'weekExpect', showNewWeekForm: true})" 
+                        class="w-full text-left p-3 hover:bg-gray-50 rounded border flex items-center">
+                  ${SVG.Calendar} <span class="ml-2">Add Week Expectations</span>
+                </button>
+                <button onclick="setState({activeTab: 'livestream', editingLivestream: true})" 
+                        class="w-full text-left p-3 hover:bg-gray-50 rounded border flex items-center">
+                  ${SVG.Video} <span class="ml-2">Livestream Settings</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Media Library Section -->
+          <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-semibold">Media Library</h3>
+              <button onclick="setState({showMediaUploader: true})" 
+                      class="bg-red-600 text-white px-3 py-1 rounded-md hover:bg-red-700 text-sm flex items-center">
+                ${SVG.Plus} <span class="ml-1">Add Media</span>
+              </button>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              ${state.mediaLibrary ? state.mediaLibrary.map(media => `
+                <div class="relative group">
+                  ${media.type === 'image' ? `
+                    <img src="${media.url}" alt="${media.name}" class="w-full h-24 object-cover rounded">
+                  ` : `
+                    <div class="w-full h-24 bg-gray-100 flex items-center justify-center rounded">
+                      ${SVG.VideoRed}
+                    </div>
+                  `}
+                  <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <button onclick="copyMediaUrl('${media.url}')" class="p-1 bg-white rounded-full mx-1">
+                      ${SVG.Share2}
+                    </button>
+                    <button onclick="handleDeleteMedia(${media.id})" class="p-1 bg-white rounded-full mx-1">
+                      ${SVG.Trash}
+                    </button>
+                  </div>
+                  <div class="text-xs truncate mt-1">${media.name}</div>
+                </div>
+              `).join('') : `<div class="col-span-full text-gray-500 text-center py-4">No media uploaded yet</div>`}
+            </div>
+          </div>
+
+          <!-- Quick Links to All Editable Sections -->
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <h3 class="text-lg font-semibold mb-4">Quick Links to Editable Sections</h3>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              <a href="#" onclick="event.preventDefault(); setState({activeTab: 'dashboard'})" 
+                 class="p-3 hover:bg-gray-50 rounded border text-center">
+                Dashboard
+              </a>
+              <a href="#" onclick="event.preventDefault(); setState({activeTab: 'community'})" 
+                 class="p-3 hover:bg-gray-50 rounded border text-center">
+                Community Posts
+              </a>
+              <a href="#" onclick="event.preventDefault(); setState({activeTab: 'files'})" 
+                 class="p-3 hover:bg-gray-50 rounded border text-center">
+                Files
+              </a>
+              <a href="#" onclick="event.preventDefault(); setState({activeTab: 'calendar'})" 
+                 class="p-3 hover:bg-gray-50 rounded border text-center">
+                Calendar
+              </a>
+              <a href="#" onclick="event.preventDefault(); setState({activeTab: 'livestream'})" 
+                 class="p-3 hover:bg-gray-50 rounded border text-center">
+                Livestream
+              </a>
+              <a href="#" onclick="event.preventDefault(); setState({activeTab: 'recapShorts'})" 
+                 class="p-3 hover:bg-gray-50 rounded border text-center">
+                Recap Shorts
+              </a>
+              <a href="#" onclick="event.preventDefault(); setState({activeTab: 'studentVideos'})" 
+                 class="p-3 hover:bg-gray-50 rounded border text-center">
+                Student Videos
+              </a>
+              <a href="#" onclick="event.preventDefault(); setState({activeTab: 'studentGallery'})" 
+                 class="p-3 hover:bg-gray-50 rounded border text-center">
+                Gallery
+              </a>
+              <a href="#" onclick="event.preventDefault(); setState({activeTab: 'weekExpect'})" 
+                 class="p-3 hover:bg-gray-50 rounded border text-center">
+                Week Expectations
+              </a>
+              <a href="#" onclick="event.preventDefault(); setState({activeTab: 'videoIdeas'})" 
+                 class="p-3 hover:bg-gray-50 rounded border text-center">
+                Video Ideas
+              </a>
+            </div>
+          </div>
+
+          <!-- Stats Section -->
+          <div class="grid md:grid-cols-4 gap-6 mb-6">
             <div class="bg-white rounded-lg shadow-sm p-6">
               <h3 class="text-lg font-semibold mb-2">Total Users</h3>
               <p class="text-3xl font-bold text-blue-600">${state.adminStats.totalUsers}</p>
@@ -2123,60 +2432,8 @@
               <p class="text-3xl font-bold text-purple-600">${state.adminStats.systemUptime}</p>
             </div>
           </div>
-
-          ${state.adminRole === 'super' ? `
-            <div class="grid md:grid-cols-2 gap-6 mb-6">
-              <div class="bg-white rounded-lg shadow-sm p-6">
-                <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
-                <div class="space-y-2">
-                  <button onclick="setState({activeTab: 'community', showNewPostForm: true})" 
-                          class="w-full text-left p-3 hover:bg-gray-50 rounded border">
-                    ${SVG.Plus} Create New Post
-                  </button>
-                  <button onclick="setState({activeTab: 'files', showNewFileForm: true})" 
-                          class="w-full text-left p-3 hover:bg-gray-50 rounded border">
-                    ${SVG.Upload} Upload New File
-                  </button>
-                  <button onclick="setState({activeTab: 'calendar', showNewCalendarWeekForm: true})" 
-                          class="w-full text-left p-3 hover:bg-gray-50 rounded border">
-                    ${SVG.Calendar} Add Calendar Week
-                  </button>
-                </div>
-              </div>
-              
-              <div class="bg-white rounded-lg shadow-sm p-6">
-                <h3 class="text-lg font-semibold mb-4">Live Chat Management</h3>
-                <div class="space-y-3">
-                  <div class="text-sm text-gray-600">Recent Messages: ${state.chatMessages.length}</div>
-                  <div class="space-y-2">
-                    <button onclick="sendStaffMessage('Hello! How can we help you today?')" 
-                            class="w-full text-left p-2 hover:bg-gray-50 rounded border text-sm">
-                      Send Welcome Message
-                    </button>
-                    <button onclick="sendStaffMessage('Thank you for contacting IVTV Summer Camp!')" 
-                            class="w-full text-left p-2 hover:bg-gray-50 rounded border text-sm">
-                      Send Thank You
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ` : `
-            <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-              <h3 class="text-lg font-semibold mb-4">Staff Actions</h3>
-              <div class="grid md:grid-cols-2 gap-4">
-                <button onclick="setState({activeTab: 'community', showNewPostForm: true})" 
-                        class="p-4 text-left hover:bg-gray-50 rounded border">
-                  ${SVG.Plus} Create New Post
-                </button>
-                <button onclick="setState({activeTab: 'files', showNewFileForm: true})" 
-                        class="p-4 text-left hover:bg-gray-50 rounded border">
-                  ${SVG.Upload} Upload New File
-                </button>
-              </div>
-            </div>
-          `}
           
+          <!-- Recent Activity Section -->
           <div class="bg-white rounded-lg shadow-sm p-6">
             <h3 class="text-lg font-semibold mb-4">Recent Activity</h3>
             <div class="space-y-3">
@@ -2220,6 +2477,7 @@
       })();
 
       document.getElementById('app').innerHTML = `
+        ${AnnouncementBanner()}
         ${Navigation()}
         <main class="max-w-6xl mx-auto">
           ${content}
@@ -2227,6 +2485,7 @@
         ${AdminLoginModal()}
         ${ExpandedPostModal()}
         ${LiveChatWidget()}
+        ${AnnouncementBannerEditor()}
       `;
     }
 
