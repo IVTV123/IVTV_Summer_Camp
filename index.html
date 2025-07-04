@@ -269,21 +269,7 @@
       // Homepage customization
       editingHomepageStats: false,
       editingHomepageInstructors: false,
-      // Live chat feature
-      showChat: false,
-      chatMessages: [
-        {
-          id: 1,
-          sender: 'IVTV Staff',
-          message: 'Welcome! How can we help you today?',
-          timestamp: new Date().toISOString(),
-          isStaff: true
-        }
-      ],
-      newChatMessage: '',
-      chatName: '',
-      chatEmail: '',
-      chatStarted: false,
+
       // Admin dashboard
       showAdminDashboard: false,
       adminStats: {
@@ -326,15 +312,6 @@
     }
 
     // --- State Logic/Setters ---
-    function updateAdminPassword(value) {
-      state.adminPassword = value;
-      // Ensure the input field value is updated
-      const passwordInput = document.getElementById('admin-password-input');
-      if (passwordInput && passwordInput.value !== value) {
-        passwordInput.value = value;
-      }
-    }
-
     function handleSaveAnnouncementBanner() {
       const enabled = document.getElementById('banner-enabled').checked;
       const text = document.getElementById('banner-text-input').value;
@@ -378,85 +355,12 @@
       setState({isAdmin: false, adminRole: 'viewer', activeTab: 'dashboard', showAdminDashboard: false}); 
     }
 
-    // Live chat handlers
-    function startChat(form) {
-      const formData = Object.fromEntries(new FormData(form));
-      setState({
-        chatName: formData.name,
-        chatEmail: formData.email,
-        chatStarted: true
-      });
-      
-      // Focus on the chat message input after starting chat
-      setTimeout(() => {
-        const chatInput = document.getElementById('chat-message-input');
-        if (chatInput) chatInput.focus();
-      }, 100);
-    }
-
-    function sendChatMessage() {
-      // Get the input element
-      const chatInput = document.getElementById('chat-message-input');
-      const messageText = chatInput ? chatInput.value.trim() : state.newChatMessage.trim();
-      
-      if (!messageText) return;
-      
-      const newMessage = {
-        id: state.chatMessages.length + 1,
-        sender: state.chatName || 'Guest',
-        message: messageText,
-        timestamp: new Date().toISOString(),
-        isStaff: false
-      };
-      
-      setState({
-        chatMessages: [...state.chatMessages, newMessage],
-        newChatMessage: ''
-      });
-      
-      // Update the input field directly
-      if (chatInput) {
-        chatInput.value = '';
-        chatInput.focus();
-      }
-      
-      // Auto-reply from staff (simulated)
-      setTimeout(() => {
-        const staffReply = {
-          id: state.chatMessages.length + 2,
-          sender: 'IVTV Staff',
-          message: 'Thanks for your message! We\'ll get back to you shortly.',
-          timestamp: new Date().toISOString(),
-          isStaff: true
-        };
-        setState({
-          chatMessages: [...state.chatMessages, staffReply]
-        });
-      }, 2000);
-    }
-
-    function sendStaffMessage(message) {
-      if (!message.trim()) return;
-      
-      const staffMessage = {
-        id: state.chatMessages.length + 1,
-        sender: 'IVTV Staff',
-        message: message,
-        timestamp: new Date().toISOString(),
-        isStaff: true
-      };
-      
-      setState({
-        chatMessages: [...state.chatMessages, staffMessage]
-      });
-    }
-
     // Permission checking
     function canEdit(feature) {
       if (!state.isAdmin) return false;
       if (state.adminRole === 'super') return true;
       if (state.adminRole === 'staff') {
-        return ['posts', 'files', 'homepage', 'chat'].includes(feature);
+        return ['posts', 'files', 'homepage'].includes(feature);
       }
       return false;
     }
@@ -2336,11 +2240,7 @@
               `}
             </div>
           ` : `
-            <button onclick="setState({showChat: true})" 
-                    class="bg-red-600 text-white p-4 rounded-full shadow-lg hover:bg-red-700 flex items-center space-x-2">
-              ${SVG.MessageCircle}
-              <span class="hidden sm:inline">Chat with us</span>
-            </button>
+
           `}
         </div>
       `;
@@ -2625,7 +2525,7 @@
         </main>
         ${AdminLoginModal()}
         ${ExpandedPostModal()}
-        ${LiveChatWidget()}
+
         ${AnnouncementBannerEditor()}
       `;
     }
