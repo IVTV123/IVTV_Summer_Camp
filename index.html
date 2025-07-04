@@ -335,16 +335,22 @@
       }
     }
 
-    function handleSaveAnnouncementBanner(form) {
-      const formData = new FormData(form);
+    function handleSaveAnnouncementBanner() {
+      const enabled = document.getElementById('banner-enabled').checked;
+      const text = document.getElementById('banner-text-input').value;
+      const backgroundColor = document.querySelector('input[name="backgroundColor"]').value;
+      const textColor = document.querySelector('input[name="textColor"]').value;
+      const linkText = document.getElementById('banner-link-text-input').value;
+      const linkUrl = document.getElementById('banner-link-url-input').value;
+
       setState({
         announcementBanner: {
-          enabled: formData.has('enabled'),
-          text: formData.get('text'),
-          backgroundColor: formData.get('backgroundColor'),
-          textColor: formData.get('textColor'),
-          linkText: formData.get('linkText'),
-          linkUrl: formData.get('linkUrl')
+          enabled: enabled,
+          text: text,
+          backgroundColor: backgroundColor,
+          textColor: textColor,
+          linkText: linkText,
+          linkUrl: linkUrl
         },
         editingAnnouncementBanner: false
       });
@@ -804,7 +810,7 @@
               </button>
             </div>
             
-            <form onsubmit="event.preventDefault(); handleSaveAnnouncementBanner(event.target);">
+            <form onsubmit="event.preventDefault(); handleSaveAnnouncementBanner();">
               <div class="space-y-4">
                 <div class="flex items-center">
                   <input type="checkbox" id="banner-enabled" name="enabled" 
@@ -814,7 +820,7 @@
                 
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Banner Text</label>
-                  <input type="text" name="text" value="${state.announcementBanner.text}" 
+                  <input type="text" id="banner-text-input" name="text" value="${state.announcementBanner.text}" 
                          class="w-full border border-gray-300 rounded px-3 py-2" required>
                 </div>
                 
@@ -833,13 +839,13 @@
                 
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Link Text (optional)</label>
-                  <input type="text" name="linkText" value="${state.announcementBanner.linkText || ''}" 
+                  <input type="text" id="banner-link-text-input" name="linkText" value="${state.announcementBanner.linkText || ''}" 
                          class="w-full border border-gray-300 rounded px-3 py-2">
                 </div>
                 
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Link URL (optional)</label>
-                  <input type="text" name="linkUrl" value="${state.announcementBanner.linkUrl || ''}" 
+                  <input type="text" id="banner-link-url-input" name="linkUrl" value="${state.announcementBanner.linkUrl || ''}" 
                          class="w-full border border-gray-300 rounded px-3 py-2">
                 </div>
                 
