@@ -328,6 +328,11 @@
     // --- State Logic/Setters ---
     function updateAdminPassword(value) {
       state.adminPassword = value;
+      // Ensure the input field value is updated
+      const passwordInput = document.getElementById('admin-password-input');
+      if (passwordInput && passwordInput.value !== value) {
+        passwordInput.value = value;
+      }
     }
 
     function handleSaveAnnouncementBanner(form) {
@@ -346,10 +351,18 @@
     }
 
     function handleAdminLogin() {
-      if (state.adminPassword === 'IVTVRules123!') {
+      // Get the password input element
+      const passwordInput = document.getElementById('admin-password-input');
+      const password = passwordInput ? passwordInput.value : state.adminPassword;
+      
+      if (password === 'IVTVRules123!') {
         setState({isAdmin: true, showAdminLogin: false, adminPassword: '', adminRole: 'super'});
-      } else if (state.adminPassword === 'IVTVStaff2025') {
+        // Clear the input field
+        if (passwordInput) passwordInput.value = '';
+      } else if (password === 'IVTVStaff2025') {
         setState({isAdmin: true, showAdminLogin: false, adminPassword: '', adminRole: 'staff'});
+        // Clear the input field
+        if (passwordInput) passwordInput.value = '';
       } else {
         alert('Incorrect password');
       }
@@ -367,15 +380,25 @@
         chatEmail: formData.email,
         chatStarted: true
       });
+      
+      // Focus on the chat message input after starting chat
+      setTimeout(() => {
+        const chatInput = document.getElementById('chat-message-input');
+        if (chatInput) chatInput.focus();
+      }, 100);
     }
 
     function sendChatMessage() {
-      if (!state.newChatMessage.trim()) return;
+      // Get the input element
+      const chatInput = document.getElementById('chat-message-input');
+      const messageText = chatInput ? chatInput.value.trim() : state.newChatMessage.trim();
+      
+      if (!messageText) return;
       
       const newMessage = {
         id: state.chatMessages.length + 1,
         sender: state.chatName || 'Guest',
-        message: state.newChatMessage,
+        message: messageText,
         timestamp: new Date().toISOString(),
         isStaff: false
       };
@@ -384,6 +407,12 @@
         chatMessages: [...state.chatMessages, newMessage],
         newChatMessage: ''
       });
+      
+      // Update the input field directly
+      if (chatInput) {
+        chatInput.value = '';
+        chatInput.focus();
+      }
       
       // Auto-reply from staff (simulated)
       setTimeout(() => {
@@ -852,8 +881,18 @@
       const adminTabs = state.isAdmin ? [
         {tab: 'adminDashboard', label: 'Admin Panel', icon: SVG.Users}
       ] : [];
+. 
+      // Show more dropdown state
+      if (typeof state.showMoreDropdown === 'undefined') {
+        state.showMoreDropdown = false;
+      }
 
-      const allTabs = [...mainTabs, ...extraTabs, ...adminTabs];
+      // Determine which tabs to show directly in the navbar vs in the More dropdown
+      const visibleMainTabs = [...mainTabs];
+      const moreDropdownTabs = [...extraTabs];
+      
+      // If admin, add admin tab to visible tabs
+      const visibleAdminTabs = state.isAdmin ? adminTabs : [];
 
       return `
         <nav class="bg-gray-900 text-white p-4 sticky top-0 z-50">
@@ -863,33 +902,75 @@
               <div class="text-sm text-gray-300 ml-2">Summer Camp 2025</div>
               ${state.isAdmin ? `<div class="text-xs bg-red-600 px-2 py-1 rounded ml-2">ADMIN</div>` : ""}
             </div>
-            <div class="hidden md:flex space-x-6">
-              ${allTabs.map(({tab, label, icon}) => `
-                <button onclick="setState({activeTab: '${tab}', mobileMenuOpen: false})" 
+            <div class="hidden md:flex space-x-4">
+              <!-- Main tabs always visible -->
+              ${visibleMainTabs.map(({tab, label, icon}) => `
+                <button onclick="setState({activeTab: '${tab}', mobileMenuOpen: false, showMoreDropdown: false})" 
                         class="flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${state.activeTab === tab ? 'bg-red-600' : 'hover:bg-gray-700'}">
                   ${icon}
                   <span>${label}</span>
                 </button>
               `).join('')}
+              
+              <!-- More dropdown -->
+              <div class="relative">
+                <button onclick="setState({showMoreDropdown: !state.showMoreDropdown, mobileMenuOpen: false})" 
+                        class="flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${moreDropdownTabs.some(t => state.activeTab === t.tab) ? 'bg-red-600' : 'hover:bg-gray-700'}">
+                  <span>More</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                ${state.showMoreDropdown ? `
+                  <div class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-50">
+                    ${moreDropdownTabs.map(({tab, label, icon}) => `
+                      <button onclick="setState({activeTab: '${tab}', showMoreDropdown: false, mobileMenuOpen: false})" 
+                              class="flex items-center space-x-2 w-full px-4 py-2 text-left text-white ${state.activeTab === tab ? 'bg-red-600' : 'hover:bg-gray-700'}">
+                        ${icon}
+                        <span>${label}</span>
+                      </button>
+                    `).join('')}
+                  </div>
+                ` : ''}
+              </div>
+              
+              <!-- Admin tabs if applicable -->
+              ${visibleAdminTabs.map(({tab, label, icon}) => `
+                <button onclick="setState({activeTab: '${tab}', mobileMenuOpen: false, showMoreDropdown: false})" 
+                        class="flex items-center space-x-2 px-3 py-2 rounded-md transition-colors ${state.activeTab === tab ? 'bg-red-600' : 'hover:bg-gray-700'}">
+                  ${icon}
+                  <span>${label}</span>
+                </button>
+              `).join('')}
+              
+              <!-- Login/Logout -->
               ${state.isAdmin ? `
-                <button onclick="handleAdminLogout()" class="text-red-400 hover:text-red-300">Logout</button>
+                <button onclick="handleAdminLogout()" class="text-red-400 hover:text-red-300 px-3 py-2">Logout</button>
               ` : `
-                <button onclick="setState({showAdminLogin: true})" class="text-gray-400 hover:text-white">Admin</button>
+                <button onclick="setState({showAdminLogin: true})" class="text-gray-400 hover:text-white px-3 py-2">Admin</button>
               `}
             </div>
-            <button onclick="setState({mobileMenuOpen: !state.mobileMenuOpen})" class="md:hidden">
+            
+            <!-- Mobile menu button -->
+            <button onclick="setState({mobileMenuOpen: !state.mobileMenuOpen, showMoreDropdown: false})" class="md:hidden">
               ${state.mobileMenuOpen ? SVG.X : SVG.Menu}
             </button>
           </div>
+          
+          <!-- Mobile menu -->
           ${state.mobileMenuOpen ? `
             <div class="md:hidden mt-4 space-y-2">
-              ${allTabs.map(({tab, label, icon}) => `
+              <!-- All tabs in mobile view -->
+              ${[...visibleMainTabs, ...moreDropdownTabs, ...visibleAdminTabs].map(({tab, label, icon}) => `
                 <button onclick="setState({activeTab: '${tab}', mobileMenuOpen: false})" 
                         class="flex items-center space-x-2 w-full px-3 py-2 rounded-md transition-colors ${state.activeTab === tab ? 'bg-red-600' : 'hover:bg-gray-700'}">
                   ${icon}
                   <span>${label}</span>
                 </button>
               `).join('')}
+              
+              <!-- Login/Logout for mobile -->
               ${state.isAdmin ? `
                 <button onclick="handleAdminLogout()" class="text-red-400 hover:text-red-300 w-full text-left px-3 py-2">Logout</button>
               ` : `
@@ -2135,8 +2216,10 @@
                 <div class="p-4 border-t">
                   <div class="flex space-x-2">
                     <input type="text" placeholder="Type a message..." 
+                           id="livestream-chat-input"
                            class="flex-1 border border-gray-300 rounded px-3 py-2 text-sm">
-                    <button class="bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 text-sm">
+                    <button onclick="sendLivestreamMessage()" 
+                            class="bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 text-sm">
                       Send
                     </button>
                   </div>
@@ -2237,7 +2320,8 @@
                            oninput="setState({newChatMessage: this.value})"
                            onkeypress="if(event.key==='Enter') sendChatMessage()"
                            placeholder="Type a message..." 
-                           class="flex-1 border border-gray-300 rounded px-3 py-2 text-sm">
+                           class="flex-1 border border-gray-300 rounded px-3 py-2 text-sm"
+                           id="chat-message-input">
                     <button onclick="sendChatMessage()" 
                             class="bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 text-sm">
                       Send
@@ -2457,6 +2541,57 @@
         </div>
       `;
     }
+    // VideoIdeas component
+    function VideoIdeas() {
+      return `
+        <div class="p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">Video Ideas Generator</h2>
+            <button onclick="getRandomVideoIdea()" 
+                    class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 flex items-center space-x-2">
+              ${SVG.VideoRed}
+              <span>Get New Idea</span>
+            </button>
+          </div>
+
+          <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            ${state.currentVideoIdea ? `
+              <div class="text-center py-8">
+                <h3 class="text-2xl font-bold mb-3">${state.currentVideoIdea.title}</h3>
+                <p class="text-lg text-gray-600 mb-6">${state.currentVideoIdea.description}</p>
+                <button onclick="getRandomVideoIdea()" 
+                        class="bg-red-600 text-white px-6 py-3 rounded-md hover:bg-red-700 inline-flex items-center space-x-2">
+                  ${SVG.VideoRed}
+                  <span>Try Another Idea</span>
+                </button>
+              </div>
+            ` : `
+              <div class="text-center py-8">
+                <p class="text-lg text-gray-600 mb-6">Click the button to get a random video idea!</p>
+                <button onclick="getRandomVideoIdea()" 
+                        class="bg-red-600 text-white px-6 py-3 rounded-md hover:bg-red-700 inline-flex items-center space-x-2">
+                  ${SVG.VideoRed}
+                  <span>Get Video Idea</span>
+                </button>
+              </div>
+            `}
+          </div>
+
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <h3 class="text-lg font-semibold mb-4">All Available Ideas</h3>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              ${state.videoIdeas.map(idea => `
+                <div class="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer" 
+                     onclick="setState({currentVideoIdea: ${JSON.stringify(idea)}})">
+                  <h4 class="font-semibold mb-2">${idea.title}</h4>
+                  <p class="text-sm text-gray-600">${idea.description}</p>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
 
     // Main render function
     function renderApp() {
@@ -2471,6 +2606,7 @@
           case 'studentVideos': return StudentVideos();
           case 'studentGallery': return StudentGallery();
           case 'weekExpect': return WeekExpect();
+          case 'videoIdeas': return VideoIdeas();
           case 'adminDashboard': return AdminDashboard();
           default: return Dashboard();
         }
@@ -2492,6 +2628,28 @@
     // Initial render
     renderApp();
 
+    // Livestream chat message function
+    function sendLivestreamMessage() {
+      const input = document.getElementById('livestream-chat-input');
+      if (!input || !input.value.trim()) return;
+      
+      // Add the message to the livestream chat
+      const chatContainer = input.closest('.bg-white').querySelector('.overflow-y-auto');
+      if (chatContainer) {
+        const newMessage = document.createElement('div');
+        newMessage.className = 'text-sm';
+        newMessage.innerHTML = `
+          <span class="font-medium text-purple-600">You:</span>
+          <span class="text-gray-700">${input.value}</span>
+        `;
+        chatContainer.appendChild(newMessage);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+      
+      // Clear the input
+      input.value = '';
+    }
+    
     // Update countdown every second if enabled
     setInterval(() => {
       if (state.countdownEnabled && state.activeTab === 'dashboard') {
