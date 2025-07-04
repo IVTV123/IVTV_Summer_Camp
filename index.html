@@ -336,14 +336,14 @@
     function handleAdminLogin() {
       // Get the password input element
       const passwordInput = document.getElementById('admin-password-input');
-      const password = passwordInput ? passwordInput.value : state.adminPassword;
+      const password = passwordInput ? passwordInput.value : '';
       
       if (password === 'IVTVRules123!') {
-        setState({isAdmin: true, showAdminLogin: false, adminPassword: '', adminRole: 'super'});
+        setState({isAdmin: true, showAdminLogin: false, adminRole: 'super'});
         // Clear the input field
         if (passwordInput) passwordInput.value = '';
       } else if (password === 'IVTVStaff2025') {
-        setState({isAdmin: true, showAdminLogin: false, adminPassword: '', adminRole: 'staff'});
+        setState({isAdmin: true, showAdminLogin: false, adminRole: 'staff'});
         // Clear the input field
         if (passwordInput) passwordInput.value = '';
       } else {
