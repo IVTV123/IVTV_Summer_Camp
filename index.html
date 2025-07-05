@@ -10,6 +10,7 @@
 <body class="min-h-screen bg-gray-50">
   <div id="app"></div>
   <script>
+
     // SVG ICONS
     const SVG = {
       Calendar: `<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`,
@@ -339,17 +340,35 @@
       const password = passwordInput ? passwordInput.value : '';
       
       if (password === 'IVTVRules123!') {
-        setState({isAdmin: true, showAdminLogin: false, adminRole: 'super'});
+        setState({isAdmin: true, adminRole: 'super'});
         // Clear the input field
         if (passwordInput) passwordInput.value = '';
       } else if (password === 'IVTVStaff2025') {
-        setState({isAdmin: true, showAdminLogin: false, adminRole: 'staff'});
+        setState({isAdmin: true, adminRole: 'staff'});
         // Clear the input field
         if (passwordInput) passwordInput.value = '';
       } else {
         alert('Incorrect password');
       }
     }
+
+    function openAdminLoginAndFocus() {
+      setState({showAdminLogin: true});
+      setTimeout(() => {
+        const passwordInput = document.getElementById('admin-password-input');
+        if (passwordInput) {
+
+          passwordInput.focus();
+        }
+      }, 200);
+        const passwordInput = document.getElementById('admin-password-input');
+        if (passwordInput) {
+          passwordInput.focus();
+        }
+      }, 100);
+    }
+
+
 
     function handleAdminLogout() { 
       setState({isAdmin: false, adminRole: 'viewer', activeTab: 'dashboard', showAdminDashboard: false}); 
@@ -864,7 +883,7 @@
               ${state.isAdmin ? `
                 <button onclick="handleAdminLogout()" class="text-red-400 hover:text-red-300 px-3 py-2">Logout</button>
               ` : `
-                <button onclick="setState({showAdminLogin: true})" class="text-gray-400 hover:text-white px-3 py-2">Admin</button>
+                <button onclick="openAdminLoginAndFocus()" class="text-gray-400 hover:text-white px-3 py-2">Admin</button>
               `}
             </div>
             
@@ -890,7 +909,7 @@
               ${state.isAdmin ? `
                 <button onclick="handleAdminLogout()" class="text-red-400 hover:text-red-300 w-full text-left px-3 py-2">Logout</button>
               ` : `
-                <button onclick="setState({showAdminLogin: true})" class="text-gray-400 hover:text-white w-full text-left px-3 py-2">Admin</button>
+                <button onclick="openAdminLoginAndFocus()" class="text-gray-400 hover:text-white w-full text-left px-3 py-2">Admin</button>
               `}
             </div>
           ` : ''}
@@ -919,12 +938,12 @@
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Hero Title</label>
                     <input type="text" name="title" value="${state.homepageHeroTitle}" 
-                           class="w-full border border-gray-300 rounded-md px-3 py-2" required>
+                           class="w-full border border-gray-300 rounded-md px-3 py-2 relative z-50" onfocus="this.select()" required>
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Hero Subtitle</label>
                     <input type="text" name="subtitle" value="${state.homepageHeroSubtitle}" 
-                           class="w-full border border-gray-300 rounded-md px-3 py-2" required>
+                           class="w-full border border-gray-300 rounded-md px-3 py-2 relative z-50" required>
                   </div>
                   <div class="flex space-x-2">
                     <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">Save</button>
@@ -1014,7 +1033,7 @@
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Countdown Title</label>
                     <input type="text" name="title" value="${state.countdownTitle}" 
-                           class="w-full border border-gray-300 rounded-md px-3 py-2" required>
+                           class="w-full border border-gray-300 rounded-md px-3 py-2" data-lpignore="true" tabindex="0" oninput="console.log('Password input:', this.value)" required>
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Target Date & Time</label>
@@ -1294,7 +1313,7 @@
                   </div>
                   
                   ${post.thumbnail ? `
-                    <div class="mb-4">
+                    <div class="mb-4" tabindex="-1">
                       <img src="${post.thumbnail}" alt="${post.title}" class="w-full h-48 object-cover rounded-lg">
                     </div>
                   ` : ''}
@@ -1905,8 +1924,6 @@
 
     // Admin login modal
     function AdminLoginModal() {
-      if (!state.showAdminLogin) return '';
-      
       return `
         <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
@@ -1916,7 +1933,8 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
                 <input type="password" 
                        id="admin-password-input"
-
+                       autocomplete="off"
+                       autofocus
                        class="w-full border border-gray-300 rounded-md px-3 py-2" 
                        required>
               </div>
@@ -2530,10 +2548,11 @@
         <main class="max-w-6xl mx-auto">
           ${content}
         </main>
-        ${AdminLoginModal()}
+        
         ${ExpandedPostModal()}
 
         ${AnnouncementBannerEditor()}
+        ${state.showAdminLogin ? AdminLoginModal() : ''}
       `;
     }
 
