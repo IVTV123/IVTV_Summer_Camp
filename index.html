@@ -1,8 +1,91 @@
 import  React, { useState, useEffect } from 'react';
 import { Calendar, Camera, Users, Video, Menu, X, Clock, Zap, Settings, Edit, Trash, Plus, Play, Upload, MessageCircle } from 'lucide-react';
 
+interface TimeLeft {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+}
+
+interface RecapVideo {
+  id: number;
+  title: string;
+  embedUrl: string;
+  week: number;
+}
+
+interface WeekDescription {
+  week: number;
+  title: string;
+  description: string;
+}
+
+interface Instructor {
+  id: number;
+  name: string;
+  title: string;
+  email: string;
+}
+
+interface CampStat {
+  label: string;
+  value: string;
+  highlight?: boolean;
+}
+
+interface Post {
+  id: number;
+  type: string;
+  title: string;
+  content: string;
+  author: string;
+  date: string;
+  likes: number;
+  comments: number;
+  thumbnail?: string;
+}
+
+interface CampWeek {
+  id: number;
+  start: string;
+  end: string;
+  theme: string;
+  description: string;
+}
+
+interface AppState {
+  activeTab: string;
+  mobileMenuOpen: boolean;
+  isAdmin: boolean;
+  showAdminLogin: boolean;
+  adminPassword: string;
+  showNewPostForm: boolean;
+  editingPost: Post | null;
+  expandedPost: Post | null;
+  homepageHeroTitle: string;
+  homepageHeroSubtitle: string;
+  recapVideos: RecapVideo[];
+  weekDescriptions: WeekDescription[];
+  liveStreamUrl: string;
+  isLiveStreamActive: boolean;
+  instructors: Instructor[];
+  campStats: CampStat[];
+  posts: Post[];
+  campCalendar: CampWeek[];
+  editingHomepage: boolean;
+  editingRecaps: boolean;
+  editingWeekDescriptions: boolean;
+  editingLiveStream: boolean;
+  editingCommunity: boolean;
+  editingCalendar: boolean;
+  showNewRecapForm: boolean;
+  showNewInstructorForm: boolean;
+  editingRecapVideo: RecapVideo | null;
+}
+
 function App() {
-   const [state, setState] = useState({
+  const [state, setState] = useState<AppState>({
     activeTab: 'dashboard',
     mobileMenuOpen: false,
     isAdmin: false,
@@ -78,9 +161,9 @@ function App() {
     showNewRecapForm: false,
     showNewInstructorForm: false,
     editingRecapVideo: null
-  }); 
+  });
 
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
     const saved = localStorage.getItem('ivtvCampState');
@@ -143,7 +226,7 @@ function App() {
     return null;
   };
 
-  const updateState = (updates: any) => {
+  const updateState = (updates: Partial<AppState>) => {
     setState(prev => ({ ...prev, ...updates }));
   };
 
@@ -155,41 +238,41 @@ function App() {
     }
   };
 
-  const handleNewPost = (e: React.FormEvent) => {
+  const handleNewPost = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
-    const newPost = {
+    const formData = new FormData(e.currentTarget);
+    const newPost: Post = {
       id: state.posts.length + 1,
-      type: formData.get('type') || 'text',
-      title: formData.get('title'),
-      content: formData.get('content'),
-      author: formData.get('author') || 'Admin',
+      type: (formData.get('type') as string) || 'text',
+      title: (formData.get('title') as string) || '',
+      content: (formData.get('content') as string) || '',
+      author: (formData.get('author') as string) || 'Admin',
       date: new Date().toISOString(),
       likes: 0,
       comments: 0,
-      thumbnail: formData.get('thumbnail') || ''
+      thumbnail: (formData.get('thumbnail') as string) || ''
     };
     updateState({ posts: [newPost, ...state.posts], showNewPostForm: false });
   };
 
-  const handleEditHomepage = (e: React.FormEvent) => {
+  const handleEditHomepage = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
+    const formData = new FormData(e.currentTarget);
     updateState({
-      homepageHeroTitle: formData.get('heroTitle'),
-      homepageHeroSubtitle: formData.get('heroSubtitle'),
+      homepageHeroTitle: (formData.get('heroTitle') as string) || '',
+      homepageHeroSubtitle: (formData.get('heroSubtitle') as string) || '',
       editingHomepage: false
     });
   };
 
-  const handleNewRecapVideo = (e: React.FormEvent) => {
+  const handleNewRecapVideo = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
-    const newVideo = {
+    const formData = new FormData(e.currentTarget);
+    const newVideo: RecapVideo = {
       id: state.recapVideos.length + 1,
-      title: formData.get('title'),
-      embedUrl: formData.get('embedUrl'),
-      week: parseInt(formData.get('week') as string)
+      title: (formData.get('title') as string) || '',
+      embedUrl: (formData.get('embedUrl') as string) || '',
+      week: parseInt((formData.get('week') as string) || '1')
     };
     updateState({ 
       recapVideos: [...state.recapVideos, newVideo], 
@@ -197,61 +280,63 @@ function App() {
     });
   };
 
-  const handleEditRecapVideo = (e: React.FormEvent) => {
+  const handleEditRecapVideo = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
-    const updatedVideo = {
+    const formData = new FormData(e.currentTarget);
+    if (!state.editingRecapVideo) return;
+    
+    const updatedVideo: RecapVideo = {
       ...state.editingRecapVideo,
-      title: formData.get('title'),
-      embedUrl: formData.get('embedUrl'),
-      week: parseInt(formData.get('week') as string)
+      title: (formData.get('title') as string) || '',
+      embedUrl: (formData.get('embedUrl') as string) || '',
+      week: parseInt((formData.get('week') as string) || '1')
     };
     updateState({
-      recapVideos: state.recapVideos.map((v: any) => v.id === updatedVideo.id ? updatedVideo : v),
+      recapVideos: state.recapVideos.map(v => v.id === updatedVideo.id ? updatedVideo : v),
       editingRecapVideo: null
     });
   };
 
   const handleDeleteRecapVideo = (id: number) => {
     if (confirm('Delete this recap video?')) {
-      updateState({ recapVideos: state.recapVideos.filter((v: any) => v.id !== id) });
+      updateState({ recapVideos: state.recapVideos.filter(v => v.id !== id) });
     }
   };
 
-  const handleUpdateLiveStream = (e: React.FormEvent) => {
+  const handleUpdateLiveStream = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
+    const formData = new FormData(e.currentTarget);
     updateState({
-      liveStreamUrl: formData.get('streamUrl'),
+      liveStreamUrl: (formData.get('streamUrl') as string) || '',
       isLiveStreamActive: formData.has('isActive'),
       editingLiveStream: false
     });
   };
 
-  const handleUpdateWeekDescriptions = (e: React.FormEvent) => {
+  const handleUpdateWeekDescriptions = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
-    const weekDescriptions = [];
+    const formData = new FormData(e.currentTarget);
+    const weekDescriptions: WeekDescription[] = [];
     let i = 0;
     while (formData.has(`weekTitle${i}`)) {
       weekDescriptions.push({
         week: i + 1,
-        title: formData.get(`weekTitle${i}`),
-        description: formData.get(`weekDesc${i}`)
+        title: (formData.get(`weekTitle${i}`) as string) || '',
+        description: (formData.get(`weekDesc${i}`) as string) || ''
       });
       i++;
     }
     updateState({ weekDescriptions, editingWeekDescriptions: false });
   };
 
-  const handleNewInstructor = (e: React.FormEvent) => {
+  const handleNewInstructor = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
-    const newInstructor = {
+    const formData = new FormData(e.currentTarget);
+    const newInstructor: Instructor = {
       id: state.instructors.length + 1,
-      name: formData.get('name'),
-      title: formData.get('title'),
-      email: formData.get('email')
+      name: (formData.get('name') as string) || '',
+      title: (formData.get('title') as string) || '',
+      email: (formData.get('email') as string) || ''
     };
     updateState({ 
       instructors: [...state.instructors, newInstructor], 
@@ -261,23 +346,23 @@ function App() {
 
   const handleDeleteInstructor = (id: number) => {
     if (confirm('Delete this instructor?')) {
-      updateState({ instructors: state.instructors.filter((i: any) => i.id !== id) });
+      updateState({ instructors: state.instructors.filter(i => i.id !== id) });
     }
   };
 
-   const handleEditCalendar = (e: React.FormEvent) => {
+  const handleEditCalendar = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
-    const campCalendar = [];
+    const formData = new FormData(e.currentTarget);
+    const campCalendar: CampWeek[] = [];
     
     let i = 0;
     while (formData.has(`weekStart${i}`)) {
       campCalendar.push({
         id: i + 1,
-        start: formData.get(`weekStart${i}`),
-        end: formData.get(`weekEnd${i}`),
-        theme: formData.get(`weekTheme${i}`),
-        description: formData.get(`weekDescription${i}`)
+        start: (formData.get(`weekStart${i}`) as string) || '',
+        end: (formData.get(`weekEnd${i}`) as string) || '',
+        theme: (formData.get(`weekTheme${i}`) as string) || '',
+        description: (formData.get(`weekDescription${i}`) as string) || ''
       });
       i++;
     }
@@ -285,7 +370,7 @@ function App() {
   };
 
   const addNewWeek = () => {
-    const newWeek = {
+    const newWeek: CampWeek = {
       id: state.campCalendar.length + 1,
       start: '',
       end: '',
@@ -298,22 +383,22 @@ function App() {
   const removeWeek = (weekId: number) => {
     if (state.campCalendar.length > 1) {
       updateState({ 
-        campCalendar: state.campCalendar.filter((w: any) => w.id !== weekId)
-          .map((w: any, idx: number) => ({ ...w, id: idx + 1 }))
+        campCalendar: state.campCalendar.filter(w => w.id !== weekId)
+          .map((w, idx) => ({ ...w, id: idx + 1 }))
       });
     }
-  }; 
+  };
 
-  const handleEditCommunity = (e: React.FormEvent) => {
+  const handleEditCommunity = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
-    const campStats = [];
+    const formData = new FormData(e.currentTarget);
+    const campStats: CampStat[] = [];
     
     let j = 0;
     while (formData.has(`statLabel${j}`)) {
       campStats.push({
-        label: formData.get(`statLabel${j}`),
-        value: formData.get(`statValue${j}`),
+        label: (formData.get(`statLabel${j}`) as string) || '',
+        value: (formData.get(`statValue${j}`) as string) || '',
         highlight: formData.has(`statHighlight${j}`)
       });
       j++;
@@ -341,7 +426,7 @@ function App() {
             { tab: 'posts', label: 'Posts', icon: Camera },
             { tab: 'community', label: 'Community', icon: Users },
             ...(state.isAdmin ? [{ tab: 'calendar', label: 'Calendar', icon: Settings }] : [])
-          ].map(({ tab, label, icon: Icon }) => ( 
+          ].map(({ tab, label, icon: Icon }) => (
             <button
               key={tab}
               onClick={() => updateState({ activeTab: tab })}
@@ -403,7 +488,7 @@ function App() {
           <p className="text-red-100">{state.homepageHeroSubtitle}</p>
         </div>
 
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white p-6 rounded-xl shadow-lg border">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">This Week</h3>
@@ -442,12 +527,12 @@ function App() {
               <p className="text-gray-500">No upcoming weeks</p>
             )}
           </div>
-        </div> 
+        </div>
 
         <div className="bg-white p-6 rounded-xl shadow-lg border">
           <h3 className="text-xl font-semibold mb-4">Week Overview</h3>
           <div className="grid gap-4">
-            {state.weekDescriptions.map((week: any, idx: number) => (
+            {state.weekDescriptions.map((week, idx) => (
               <div key={idx} className="p-4 bg-gray-50 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-semibold text-gray-800">Week {week.week}: {week.title}</h4>
@@ -484,7 +569,7 @@ function App() {
         )}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {state.recapVideos.map((video: any) => (
+        {state.recapVideos.map((video) => (
           <div key={video.id} className="bg-white rounded-xl shadow-lg overflow-hidden">
             <div className="aspect-video">
               <iframe
@@ -593,7 +678,7 @@ function App() {
         )}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {state.posts.map((post: any) => (
+        {state.posts.map((post) => (
           <div key={post.id} className="bg-white rounded-xl shadow-lg border overflow-hidden group hover:ring-2 hover:ring-red-400 transition cursor-pointer">
             {post.thumbnail && (
               <div className="relative">
@@ -666,7 +751,7 @@ function App() {
             )}
           </div>
           <div className="space-y-4">
-            {state.instructors.map((inst: any) => (
+            {state.instructors.map((inst) => (
               <div key={inst.id} className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white font-semibold">
@@ -693,7 +778,7 @@ function App() {
         <div className="bg-white p-6 rounded-xl shadow-lg border">
           <h3 className="text-lg font-semibold mb-4">Camp Stats</h3>
           <div className="space-y-3">
-            {state.campStats.map((stat: any, idx: number) => (
+            {state.campStats.map((stat, idx) => (
               <div key={idx} className="flex justify-between">
                 <span className="text-gray-600">{stat.label}</span>
                 <span className={`font-semibold ${stat.highlight ? 'text-red-600' : ''}`}>
@@ -773,7 +858,7 @@ function App() {
       <div className="bg-white p-6 rounded-xl shadow-lg border">
         <h3 className="text-lg font-semibold mb-4">Week Schedule</h3>
         <div className="space-y-4">
-          {state.campCalendar.map((week: any, idx: number) => {
+          {state.campCalendar.map((week, idx) => {
             const start = new Date(week.start);
             const end = new Date(week.end);
             const today = new Date();
@@ -1007,7 +1092,7 @@ function App() {
             <h3 className="text-lg font-semibold mb-4">Edit Week Descriptions</h3>
             <form onSubmit={handleUpdateWeekDescriptions}>
               <div className="space-y-4">
-                {state.weekDescriptions.map((week: any, idx: number) => (
+                {state.weekDescriptions.map((week, idx) => (
                   <div key={idx} className="border rounded-lg p-4">
                     <h4 className="font-medium mb-2">Week {week.week}</h4>
                     <div className="space-y-2">
@@ -1033,7 +1118,7 @@ function App() {
             <form onSubmit={handleEditCommunity}>
               <div className="space-y-4">
                 <h4 className="font-medium mb-3">Camp Stats</h4>
-                {state.campStats.map((stat: any, idx: number) => (
+                {state.campStats.map((stat, idx) => (
                   <div key={idx} className="grid grid-cols-3 gap-2 mb-2">
                     <input name={`statLabel${idx}`} defaultValue={stat.label} placeholder="Label" className="p-2 border rounded" />
                     <input name={`statValue${idx}`} defaultValue={stat.value} placeholder="Value" className="p-2 border rounded" />
@@ -1081,7 +1166,7 @@ function App() {
         </div>
       )}
 
-           {state.editingCalendar && (
+      {state.editingCalendar && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-lg max-w-5xl w-full max-h-[95vh] flex flex-col">
             <div className="p-6 border-b flex items-center justify-between">
@@ -1108,7 +1193,7 @@ function App() {
             <div className="flex-1 overflow-y-auto p-6">
               <form onSubmit={handleEditCalendar} id="calendar-form">
                 <div className="space-y-4">
-                  {state.campCalendar.map((week: any, idx: number) => (
+                  {state.campCalendar.map((week, idx) => (
                     <div key={week.id} className="border rounded-lg p-4 relative">
                       <div className="flex items-center justify-between mb-3">
                         <h4 className="font-medium">Week {idx + 1}</h4>
@@ -1188,10 +1273,9 @@ function App() {
             </div>
           </div>
         </div>
-      )} 
+      )}
     </div>
   );
 }
 
 export default App;
- 
