@@ -1,1281 +1,725 @@
-import  React, { useState, useEffect } from 'react';
-import { Calendar, Camera, Users, Video, Menu, X, Clock, Zap, Settings, Edit, Trash, Plus, Play, Upload, MessageCircle } from 'lucide-react';
+<!DOCTYPE  html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IVTV Summer Camp 2025</title>
+  <meta name="description" content="Built with jdoodle.ai - Professional TV Production Training Summer Camp 2025. Learn camera operation, editing, live broadcasting, and more." />
+  <meta property="og:title" content="IVTV Summer Camp 2025" />
+  <meta property="og:description" content="Built with jdoodle.ai - Professional TV Production Training Summer Camp 2025. Learn camera operation, editing, live broadcasting, and more." />
+  <meta property="og:image" content="https://imagedelivery.net/None/ef85e906jf4ddj49adj8df6j6cab8cd256e8/public" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="IVTV Summer Camp 2025" />
+  <meta name="twitter:description" content="Built with jdoodle.ai - Professional TV Production Training Summer Camp 2025. Learn camera operation, editing, live broadcasting, and more." />
+  <meta name="twitter:image" content="https://imagedelivery.net/None/ef85e906jf4ddj49adj8df6j6cab8cd256e8/public" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📺</text></svg>" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body class="min-h-screen bg-gray-50">
+  <nav class="bg-gray-900 text-white p-4 sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto flex justify-between items-center">
+      <div class="flex items-center space-x-4">
+        <div class="text-xl font-bold text-red-500">IVTV</div>
+        <div class="text-sm text-gray-300">Summer Camp 2025</div>
+        <div id="admin-badge" class="text-xs bg-red-600 px-2 py-1 rounded hidden">ADMIN</div>
+      </div>
+      <div class="hidden md:flex space-x-6" id="nav-links">
+        <button onclick="showTab('dashboard')" class="nav-btn flex items-center space-x-2 px-3 py-2 rounded-lg bg-red-600">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          <span>Dashboard</span>
+        </button>
+        <button onclick="showTab('recaps')" class="nav-btn flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-800">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1.01M15 10h1.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <span>Recap Videos</span>
+        </button>
+        <button onclick="showTab('livestream')" class="nav-btn flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-800">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          <span>Live Stream</span>
+        </button>
+        <button onclick="showTab('posts')" class="nav-btn flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-800">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
+          <span>Posts</span>
+        </button>
+        <button onclick="showTab('community')" class="nav-btn flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-800">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path></svg>
+          <span>Community</span>
+        </button>
+        <button id="calendar-btn" onclick="showTab('calendar')" class="nav-btn flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-800 hidden">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
+          <span>Calendar</span>
+        </button>
+        <button id="admin-btn" onclick="toggleAdmin()" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-800">
+          <span>Admin</span>
+        </button>
+      </div>
+    </div>
+  </nav>
 
-interface TimeLeft {
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
-}
+  <main class="max-w-6xl mx-auto px-4 py-8">
+    <div id="dashboard-tab" class="tab-content">
+      <div class="space-y-6">
+        <div class="bg-gradient-to-r from-red-600 to-red-700 text-white p-6 rounded-xl">
+          <h1 class="text-3xl font-bold mb-2">
+            <span id="hero-title">Welcome to IVTV Summer Camp</span>
+            <button id="edit-homepage-btn" onclick="editHomepage()" class="ml-2 px-2 py-1 rounded bg-white/20 hover:bg-white/40 text-xs admin-only hidden">Edit</button>
+          </h1>
+          <p class="text-red-100" id="hero-subtitle">Professional TV Production Training • Summer 2025</p>
+        </div>
 
-interface RecapVideo {
-  id: number;
-  title: string;
-  embedUrl: string;
-  week: number;
-}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-xl shadow-lg border">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold">This Week</h3>
+              <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1.01M15 10h1.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <p class="text-gray-600 mb-4" id="current-week">Week 1: Camera & Lighting Fundamentals</p>
+          </div>
 
-interface WeekDescription {
-  week: number;
-  title: string;
-  description: string;
-}
+          <div class="bg-white p-6 rounded-xl shadow-lg border">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold">Next Week Countdown</h3>
+              <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <div id="countdown" class="grid grid-cols-4 gap-2 text-center">
+              <div><div class="text-2xl font-bold text-red-600" id="days">12</div><div class="text-xs text-gray-500">DAYS</div></div>
+              <div><div class="text-2xl font-bold text-red-600" id="hours">05</div><div class="text-xs text-gray-500">HRS</div></div>
+              <div><div class="text-2xl font-bold text-red-600" id="minutes">23</div><div class="text-xs text-gray-500">MIN</div></div>
+              <div><div class="text-2xl font-bold text-red-600" id="seconds">47</div><div class="text-xs text-gray-500">SEC</div></div>
+            </div>
+          </div>
+        </div>
 
-interface Instructor {
-  id: number;
-  name: string;
-  title: string;
-  email: string;
-}
+        <div class="bg-white p-6 rounded-xl shadow-lg border">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-semibold">Week Overview</h3>
+            <button onclick="editWeekDescriptions()" class="admin-only hidden text-xs px-2 py-1 bg-gray-200 rounded hover:bg-gray-300">Edit</button>
+          </div>
+          <div id="week-overview" class="grid gap-4">
+            <div class="p-4 bg-gray-50 rounded-lg">
+              <h4 class="font-semibold text-gray-800 mb-2">Week 1: Camera & Lighting Fundamentals</h4>
+              <p class="text-gray-600 text-sm">Learn the basics of camera operation, lighting techniques, and composition. Students will master the technical foundations of video production.</p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-lg">
+              <h4 class="font-semibold text-gray-800 mb-2">Week 2: Editing & Post-Production</h4>
+              <p class="text-gray-600 text-sm">Dive into video editing software, color correction, and audio mixing. Create polished final products from raw footage.</p>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-lg">
+              <h4 class="font-semibold text-gray-800 mb-2">Week 3: On-Air Presentation & Live Production</h4>
+              <p class="text-gray-600 text-sm">Develop presentation skills, practice live broadcasting, and produce a full news program as a team.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-interface CampStat {
-  label: string;
-  value: string;
-  highlight?: boolean;
-}
+    <div id="recaps-tab" class="tab-content hidden">
+      <div class="space-y-6">
+        <div class="flex justify-between items-center">
+          <h2 class="text-2xl font-bold">Recap Videos</h2>
+          <button onclick="addRecapVideo()" class="admin-only hidden bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 flex items-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+            <span>Add Video</span>
+          </button>
+        </div>
+        <div id="recap-videos" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="aspect-video">
+              <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" class="w-full h-full" frameborder="0" allowfullscreen title="Week 1 Highlights"></iframe>
+            </div>
+            <div class="p-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="font-semibold text-gray-800">Week 1 Highlights</h3>
+                  <p class="text-sm text-gray-500">Week 1</p>
+                </div>
+                <div class="admin-only hidden flex space-x-2">
+                  <button class="text-blue-600 hover:text-blue-800">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                  </button>
+                  <button class="text-red-600 hover:text-red-800">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-interface Post {
-  id: number;
-  type: string;
-  title: string;
-  content: string;
-  author: string;
-  date: string;
-  likes: number;
-  comments: number;
-  thumbnail?: string;
-}
+    <div id="livestream-tab" class="tab-content hidden">
+      <div class="space-y-6">
+        <div class="flex justify-between items-center">
+          <h2 class="text-2xl font-bold">Live Stream</h2>
+          <button onclick="configureLiveStream()" class="admin-only hidden bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 flex items-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
+            <span>Configure Stream</span>
+          </button>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div class="p-4 bg-gray-50 border-b">
+            <div class="flex items-center justify-between">
+              <h3 class="font-semibold">IVTV Live Programming</h3>
+              <div id="live-status" class="flex items-center space-x-2 px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-600">
+                <div class="w-2 h-2 rounded-full bg-gray-400"></div>
+                <span>OFFLINE</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="aspect-video bg-gray-900 flex items-center justify-center" id="live-stream-container">
+            <div class="text-center text-white">
+              <svg class="w-16 h-16 mx-auto mb-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+              <p class="text-lg">Stream offline</p>
+              <p class="text-sm text-gray-400">Check back later for live programming</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-interface CampWeek {
-  id: number;
-  start: string;
-  end: string;
-  theme: string;
-  description: string;
-}
+    <div id="posts-tab" class="tab-content hidden">
+      <div class="space-y-6">
+        <div class="flex justify-between items-center">
+          <h2 class="text-2xl font-bold">Posts & Updates</h2>
+          <button onclick="createNewPost()" class="admin-only hidden bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 flex items-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+            <span>New Post</span>
+          </button>
+        </div>
+        <div id="posts-container" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white rounded-xl shadow-lg border overflow-hidden group hover:ring-2 hover:ring-red-400 transition cursor-pointer">
+            <img src="https://images.unsplash.com/photo-1492619375914-88005aa9e8fb?w=400&h=225&fit=crop" alt="Day 1: Camera Basics Workshop" class="w-full h-48 object-cover">
+            <div class="p-6">
+              <div class="flex items-center justify-between mb-3">
+                <span class="px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">VIDEO</span>
+                <span class="text-sm text-gray-500">2025-07-01</span>
+              </div>
+              <h3 class="text-xl font-semibold text-gray-800 mb-3">Day 1: Camera Basics Workshop</h3>
+              <p class="text-gray-600 mb-4">Students learned the fundamentals of camera operation and composition.</p>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-500">By Instructor Sarah</span>
+                <div class="flex items-center space-x-4">
+                  <div class="flex items-center space-x-1 text-red-500">
+                    <span>❤️</span>
+                    <span class="text-sm">15</span>
+                  </div>
+                  <div class="flex items-center space-x-1 text-blue-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                    <span class="text-sm">3</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-interface AppState {
-  activeTab: string;
-  mobileMenuOpen: boolean;
-  isAdmin: boolean;
-  showAdminLogin: boolean;
-  adminPassword: string;
-  showNewPostForm: boolean;
-  editingPost: Post | null;
-  expandedPost: Post | null;
-  homepageHeroTitle: string;
-  homepageHeroSubtitle: string;
-  recapVideos: RecapVideo[];
-  weekDescriptions: WeekDescription[];
-  liveStreamUrl: string;
-  isLiveStreamActive: boolean;
-  instructors: Instructor[];
-  campStats: CampStat[];
-  posts: Post[];
-  campCalendar: CampWeek[];
-  editingHomepage: boolean;
-  editingRecaps: boolean;
-  editingWeekDescriptions: boolean;
-  editingLiveStream: boolean;
-  editingCommunity: boolean;
-  editingCalendar: boolean;
-  showNewRecapForm: boolean;
-  showNewInstructorForm: boolean;
-  editingRecapVideo: RecapVideo | null;
-}
+    <div id="community-tab" class="tab-content hidden">
+      <div class="space-y-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-bold">Community</h2>
+          <button onclick="editCommunity()" class="admin-only hidden px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200">Edit</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-xl shadow-lg border">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold">Instructors</h3>
+              <button onclick="addInstructor()" class="admin-only hidden px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200 flex items-center space-x-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                <span>Add</span>
+              </button>
+            </div>
+            <div id="instructors-list" class="space-y-4">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white font-semibold">S</div>
+                  <div>
+                    <p class="font-semibold text-gray-800">Sarah Johnson</p>
+                    <p class="text-sm text-gray-600">Camera & Lighting Specialist</p>
+                    <p class="text-xs text-gray-500">sarah@ivtv.com</p>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white font-semibold">M</div>
+                  <div>
+                    <p class="font-semibold text-gray-800">Mike Chen</p>
+                    <p class="text-sm text-gray-600">Audio & Post-Production</p>
+                    <p class="text-xs text-gray-500">mike@ivtv.com</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow-lg border">
+            <h3 class="text-lg font-semibold mb-4">Camp Stats</h3>
+            <div id="camp-stats" class="space-y-3">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Total Students:</span>
+                <span class="font-semibold">24</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Projects Started:</span>
+                <span class="font-semibold">8</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Skills Workshops:</span>
+                <span class="font-semibold">12</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Days Remaining:</span>
+                <span class="font-semibold text-red-600">12</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-function App() {
-  const [state, setState] = useState<AppState>({
-    activeTab: 'dashboard',
-    mobileMenuOpen: false,
-    isAdmin: false,
-    showAdminLogin: false,
-    adminPassword: '',
-    showNewPostForm: false,
-    editingPost: null,
-    expandedPost: null,
-    homepageHeroTitle: 'Welcome to IVTV Summer Camp',
-    homepageHeroSubtitle: 'Professional TV Production Training • Summer 2025',
-    recapVideos: [
-      { id: 1, title: 'Week 1 Highlights', embedUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', week: 1 },
-      { id: 2, title: 'Week 2 Best Moments', embedUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', week: 2 }
-    ],
-    weekDescriptions: [
-      { week: 1, title: 'Camera & Lighting Fundamentals', description: 'Learn the basics of camera operation, lighting techniques, and composition. Students will master the technical foundations of video production.' },
-      { week: 2, title: 'Editing & Post-Production', description: 'Dive into video editing software, color correction, and audio mixing. Create polished final products from raw footage.' },
-      { week: 3, title: 'On-Air Presentation & Live Production', description: 'Develop presentation skills, practice live broadcasting, and produce a full news program as a team.' },
-      { week: 4, title: 'Documentary Production', description: 'Plan, shoot, and edit compelling documentary content with real-world storytelling techniques.' },
-      { week: 5, title: 'Sports Broadcasting', description: 'Master live sports coverage, commentary, and multi-camera production for athletic events.' },
-      { week: 6, title: 'Commercial Production', description: 'Create professional advertisements and marketing content from concept to final cut.' }
-    ],
-    liveStreamUrl: 'https://www.youtube.com/embed/live_stream',
-    isLiveStreamActive: false,
-    instructors: [
-      { id: 1, name: 'Sarah Johnson', title: 'Camera & Lighting Specialist', email: 'sarah@ivtv.com' },
-      { id: 2, name: 'Mike Chen', title: 'Audio & Post-Production', email: 'mike@ivtv.com' }
-    ],
-    campStats: [
-      { label: 'Total Students:', value: '24' },
-      { label: 'Projects Started:', value: '8' },
-      { label: 'Skills Workshops:', value: '12' },
-      { label: 'Days Remaining:', value: '12', highlight: true }
-    ],
-    posts: [
-      {
-        id: 1,
-        type: 'video',
-        title: 'Day 1: Camera Basics Workshop',
-        content: 'Students learned the fundamentals of camera operation and composition.',
-        author: 'Instructor Sarah',
-        date: '2025-07-01T09:00:00',
-        likes: 15,
-        comments: 3,
-        thumbnail: 'https://images.unsplash.com/photo-1492619375914-88005aa9e8fb?w=400&h=225&fit=crop'
-      },
-      {
-        id: 2,
-        type: 'photo',
-        title: 'Behind the Scenes: Set Design',
-        content: 'Amazing creativity from our campers designing their first TV set!',
-        author: 'Instructor Mike',
-        date: '2025-07-02T16:00:00',
-        likes: 22,
-        comments: 8,
-        thumbnail: 'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=400&h=300&fit=crop'
-      }
-    ],
-    campCalendar: [
-      { id: 1, start: '2025-07-01', end: '2025-07-05', theme: 'Camera & Lighting', description: 'Foundation week focusing on technical skills' },
-      { id: 2, start: '2025-07-08', end: '2025-07-12', theme: 'Editing & Post-Production', description: 'Creative editing and digital production' },
-      { id: 3, start: '2025-07-15', end: '2025-07-19', theme: 'On-Air Presentation', description: 'Live broadcasting and presentation skills' },
-      { id: 4, start: '2025-07-22', end: '2025-07-26', theme: 'Documentary Production', description: 'Plan, shoot, and edit compelling documentary content' },
-      { id: 5, start: '2025-07-29', end: '2025-08-02', theme: 'Sports Broadcasting', description: 'Master live sports coverage and commentary' },
-      { id: 6, start: '2025-08-05', end: '2025-08-09', theme: 'Commercial Production', description: 'Create professional advertisements and marketing content' }
-    ],
-    editingHomepage: false,
-    editingRecaps: false,
-    editingWeekDescriptions: false,
-    editingLiveStream: false,
-    editingCommunity: false,
-    editingCalendar: false,
-    showNewRecapForm: false,
-    showNewInstructorForm: false,
-    editingRecapVideo: null
-  });
+    <div id="calendar-tab" class="tab-content hidden">
+      <div class="space-y-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-bold">Calendar Management</h2>
+          <button onclick="editCalendar()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 flex items-center space-x-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+            <span>Edit Calendar</span>
+          </button>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-xl shadow-lg border">
+            <h3 class="text-lg font-semibold mb-4">Current Status</h3>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Current Week:</span>
+                <span class="font-semibold">Week 1: Camera & Lighting</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Next Week:</span>
+                <span class="font-semibold">2025-07-08</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Total Weeks:</span>
+                <span class="font-semibold">6</span>
+              </div>
+            </div>
+          </div>
 
-  const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+          <div class="bg-white p-6 rounded-xl shadow-lg border">
+            <h3 class="text-lg font-semibold mb-4">Time Remaining</h3>
+            <div class="grid grid-cols-4 gap-2 text-center">
+              <div><div class="text-2xl font-bold text-red-600">12</div><div class="text-xs text-gray-500">DAYS</div></div>
+              <div><div class="text-2xl font-bold text-red-600">05</div><div class="text-xs text-gray-500">HRS</div></div>
+              <div><div class="text-2xl font-bold text-red-600">23</div><div class="text-xs text-gray-500">MIN</div></div>
+              <div><div class="text-2xl font-bold text-red-600">47</div><div class="text-xs text-gray-500">SEC</div></div>
+            </div>
+          </div>
+        </div>
 
-  useEffect(() => {
-    const saved = localStorage.getItem('ivtvCampState');
-    if (saved) {
-      try {
-        const parsedState = JSON.parse(saved);
-        setState(prev => ({ ...prev, ...parsedState }));
-      } catch (e) {
-        console.error('Error loading saved state:', e);
+        <div class="bg-white p-6 rounded-xl shadow-lg border">
+          <h3 class="text-lg font-semibold mb-4">Week Schedule</h3>
+          <div id="calendar-schedule" class="space-y-4">
+            <div class="p-4 rounded-lg border-l-4 bg-red-50 border-red-500">
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="font-semibold">Week 1: Camera & Lighting Fundamentals</h4>
+                <div class="px-2 py-1 rounded-full text-xs font-semibold bg-red-200 text-red-800">ACTIVE</div>
+              </div>
+              <p class="text-sm text-gray-600 mb-2">Learn the basics of camera operation, lighting techniques, and composition.</p>
+              <div class="text-xs text-gray-500">2025-07-01 - 2025-07-05</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="admin-login-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white p-6 rounded-xl shadow-lg max-w-md w-full mx-4">
+      <h3 class="text-lg font-semibold mb-4">Admin Login</h3>
+      <input
+        type="password"
+        id="admin-password"
+        placeholder="Enter admin password"
+        class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-red-500"
+      />
+      <div class="flex space-x-3">
+        <button onclick="adminLogin()" class="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700">Login</button>
+        <button onclick="closeAdminLogin()" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let isAdmin = false;
+    let activeTab = 'dashboard';
+    
+    let appData = {
+      heroTitle: 'Welcome to IVTV Summer Camp',
+      heroSubtitle: 'Professional TV Production Training • Summer 2025',
+      campCalendar: [
+        { id: 1, start: '2025-07-01', end: '2025-07-05', theme: 'Camera & Lighting', description: 'Foundation week focusing on technical skills' },
+        { id: 2, start: '2025-07-08', end: '2025-07-12', theme: 'Editing & Post-Production', description: 'Creative editing and digital production' },
+        { id: 3, start: '2025-07-15', end: '2025-07-19', theme: 'On-Air Presentation', description: 'Live broadcasting and presentation skills' },
+        { id: 4, start: '2025-07-22', end: '2025-07-26', theme: 'Documentary Production', description: 'Plan, shoot, and edit compelling documentary content' },
+        { id: 5, start: '2025-07-29', end: '2025-08-02', theme: 'Sports Broadcasting', description: 'Master live sports coverage and commentary' },
+        { id: 6, start: '2025-08-05', end: '2025-08-09', theme: 'Commercial Production', description: 'Create professional advertisements and marketing content' }
+      ],
+      weekDescriptions: [
+        { week: 1, title: 'Camera & Lighting Fundamentals', description: 'Learn the basics of camera operation, lighting techniques, and composition. Students will master the technical foundations of video production.' },
+        { week: 2, title: 'Editing & Post-Production', description: 'Dive into video editing software, color correction, and audio mixing. Create polished final products from raw footage.' },
+        { week: 3, title: 'On-Air Presentation & Live Production', description: 'Develop presentation skills, practice live broadcasting, and produce a full news program as a team.' }
+      ],
+      recapVideos: [
+        { id: 1, title: 'Week 1 Highlights', embedUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', week: 1 }
+      ],
+      liveStreamUrl: 'https://www.youtube.com/embed/live_stream',
+      isLiveStreamActive: false,
+      instructors: [
+        { id: 1, name: 'Sarah Johnson', title: 'Camera & Lighting Specialist', email: 'sarah@ivtv.com' },
+        { id: 2, name: 'Mike Chen', title: 'Audio & Post-Production', email: 'mike@ivtv.com' }
+      ],
+      campStats: [
+        { label: 'Total Students:', value: '24' },
+        { label: 'Projects Started:', value: '8' },
+        { label: 'Skills Workshops:', value: '12' },
+        { label: 'Days Remaining:', value: '12', highlight: true }
+      ],
+      posts: [
+        {
+          id: 1,
+          type: 'video',
+          title: 'Day 1: Camera Basics Workshop',
+          content: 'Students learned the fundamentals of camera operation and composition.',
+          author: 'Instructor Sarah',
+          date: '2025-07-01',
+          likes: 15,
+          comments: 3,
+          thumbnail: 'https://images.unsplash.com/photo-1492619375914-88005aa9e8fb?w=400&h=225&fit=crop'
+        }
+      ]
+    };
+
+    function showTab(tabName) {
+      activeTab = tabName;
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('bg-red-600');
+        btn.classList.add('hover:bg-gray-800');
+      });
+      
+      document.getElementById(tabName + '-tab').classList.remove('hidden');
+      event.target.closest('.nav-btn').classList.add('bg-red-600');
+      event.target.closest('.nav-btn').classList.remove('hover:bg-gray-800');
+    }
+
+    function toggleAdmin() {
+      if (isAdmin) {
+        isAdmin = false;
+        document.getElementById('admin-badge').classList.add('hidden');
+        document.getElementById('calendar-btn').classList.add('hidden');
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
+        document.getElementById('admin-btn').innerHTML = '<span>Admin</span>';
+        if (activeTab === 'calendar') {
+          showTab('dashboard');
+        }
+      } else {
+        document.getElementById('admin-login-modal').classList.remove('hidden');
       }
     }
-  }, []);
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('ivtvCampState', JSON.stringify(state));
-    } catch (e) {
-      console.error('Error saving state:', e);
+    function adminLogin() {
+      const password = document.getElementById('admin-password').value;
+      if (password === 'IVTVRules123!') {
+        isAdmin = true;
+        document.getElementById('admin-badge').classList.remove('hidden');
+        document.getElementById('calendar-btn').classList.remove('hidden');
+        document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
+        document.getElementById('admin-btn').innerHTML = '<span>Logout</span>';
+        closeAdminLogin();
+      } else {
+        alert('Incorrect password');
+      }
     }
-  }, [state]);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
+    function closeAdminLogin() {
+      document.getElementById('admin-login-modal').classList.add('hidden');
+      document.getElementById('admin-password').value = '';
+    }
+
+    function updateCountdown() {
       const nextWeek = getNextWeekStart();
       if (nextWeek) {
         const now = new Date().getTime();
         const distance = nextWeek.getTime() - now;
         
         if (distance > 0) {
-          setTimeLeft({
-            days: Math.floor(distance / (1000 * 60 * 60 * 24)),
-            hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-            minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-            seconds: Math.floor((distance % (1000 * 60)) / 1000)
-          });
+          const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+          
+          document.getElementById('days').textContent = days.toString().padStart(2, '0');
+          document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+          document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+          document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
         }
       }
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [state.campCalendar]);
-
-  const getNextWeekStart = () => {
-    const today = new Date();
-    for (const week of state.campCalendar) {
-      const start = new Date(week.start);
-      if (start > today) return start;
-    }
-    return null;
-  };
-
-  const getCurrentWeek = () => {
-    const today = new Date();
-    for (let i = 0; i < state.campCalendar.length; i++) {
-      const week = state.campCalendar[i];
-      const start = new Date(week.start);
-      const end = new Date(week.end);
-      if (today >= start && today <= end) return { ...week, idx: i + 1 };
-    }
-    return null;
-  };
-
-  const updateState = (updates: Partial<AppState>) => {
-    setState(prev => ({ ...prev, ...updates }));
-  };
-
-  const handleAdminLogin = () => {
-    if (state.adminPassword === 'IVTVRules123!') {
-      updateState({ isAdmin: true, showAdminLogin: false, adminPassword: '' });
-    } else {
-      alert('Incorrect password');
-    }
-  };
-
-  const handleNewPost = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const newPost: Post = {
-      id: state.posts.length + 1,
-      type: (formData.get('type') as string) || 'text',
-      title: (formData.get('title') as string) || '',
-      content: (formData.get('content') as string) || '',
-      author: (formData.get('author') as string) || 'Admin',
-      date: new Date().toISOString(),
-      likes: 0,
-      comments: 0,
-      thumbnail: (formData.get('thumbnail') as string) || ''
-    };
-    updateState({ posts: [newPost, ...state.posts], showNewPostForm: false });
-  };
-
-  const handleEditHomepage = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    updateState({
-      homepageHeroTitle: (formData.get('heroTitle') as string) || '',
-      homepageHeroSubtitle: (formData.get('heroSubtitle') as string) || '',
-      editingHomepage: false
-    });
-  };
-
-  const handleNewRecapVideo = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const newVideo: RecapVideo = {
-      id: state.recapVideos.length + 1,
-      title: (formData.get('title') as string) || '',
-      embedUrl: (formData.get('embedUrl') as string) || '',
-      week: parseInt((formData.get('week') as string) || '1')
-    };
-    updateState({ 
-      recapVideos: [...state.recapVideos, newVideo], 
-      showNewRecapForm: false 
-    });
-  };
-
-  const handleEditRecapVideo = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    if (!state.editingRecapVideo) return;
-    
-    const updatedVideo: RecapVideo = {
-      ...state.editingRecapVideo,
-      title: (formData.get('title') as string) || '',
-      embedUrl: (formData.get('embedUrl') as string) || '',
-      week: parseInt((formData.get('week') as string) || '1')
-    };
-    updateState({
-      recapVideos: state.recapVideos.map(v => v.id === updatedVideo.id ? updatedVideo : v),
-      editingRecapVideo: null
-    });
-  };
-
-  const handleDeleteRecapVideo = (id: number) => {
-    if (confirm('Delete this recap video?')) {
-      updateState({ recapVideos: state.recapVideos.filter(v => v.id !== id) });
-    }
-  };
-
-  const handleUpdateLiveStream = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    updateState({
-      liveStreamUrl: (formData.get('streamUrl') as string) || '',
-      isLiveStreamActive: formData.has('isActive'),
-      editingLiveStream: false
-    });
-  };
-
-  const handleUpdateWeekDescriptions = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const weekDescriptions: WeekDescription[] = [];
-    let i = 0;
-    while (formData.has(`weekTitle${i}`)) {
-      weekDescriptions.push({
-        week: i + 1,
-        title: (formData.get(`weekTitle${i}`) as string) || '',
-        description: (formData.get(`weekDesc${i}`) as string) || ''
-      });
-      i++;
-    }
-    updateState({ weekDescriptions, editingWeekDescriptions: false });
-  };
-
-  const handleNewInstructor = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const newInstructor: Instructor = {
-      id: state.instructors.length + 1,
-      name: (formData.get('name') as string) || '',
-      title: (formData.get('title') as string) || '',
-      email: (formData.get('email') as string) || ''
-    };
-    updateState({ 
-      instructors: [...state.instructors, newInstructor], 
-      showNewInstructorForm: false 
-    });
-  };
-
-  const handleDeleteInstructor = (id: number) => {
-    if (confirm('Delete this instructor?')) {
-      updateState({ instructors: state.instructors.filter(i => i.id !== id) });
-    }
-  };
-
-  const handleEditCalendar = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const campCalendar: CampWeek[] = [];
-    
-    let i = 0;
-    while (formData.has(`weekStart${i}`)) {
-      campCalendar.push({
-        id: i + 1,
-        start: (formData.get(`weekStart${i}`) as string) || '',
-        end: (formData.get(`weekEnd${i}`) as string) || '',
-        theme: (formData.get(`weekTheme${i}`) as string) || '',
-        description: (formData.get(`weekDescription${i}`) as string) || ''
-      });
-      i++;
-    }
-    updateState({ campCalendar, editingCalendar: false });
-  };
-
-  const addNewWeek = () => {
-    const newWeek: CampWeek = {
-      id: state.campCalendar.length + 1,
-      start: '',
-      end: '',
-      theme: '',
-      description: ''
-    };
-    updateState({ campCalendar: [...state.campCalendar, newWeek] });
-  };
-
-  const removeWeek = (weekId: number) => {
-    if (state.campCalendar.length > 1) {
-      updateState({ 
-        campCalendar: state.campCalendar.filter(w => w.id !== weekId)
-          .map((w, idx) => ({ ...w, id: idx + 1 }))
-      });
-    }
-  };
-
-  const handleEditCommunity = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const campStats: CampStat[] = [];
-    
-    let j = 0;
-    while (formData.has(`statLabel${j}`)) {
-      campStats.push({
-        label: (formData.get(`statLabel${j}`) as string) || '',
-        value: (formData.get(`statValue${j}`) as string) || '',
-        highlight: formData.has(`statHighlight${j}`)
-      });
-      j++;
     }
 
-    updateState({ 
-      campStats, 
-      editingCommunity: false 
-    });
-  };
+    function getNextWeekStart() {
+      const today = new Date();
+      for (const week of appData.campCalendar) {
+        const start = new Date(week.start);
+        if (start > today) return start;
+      }
+      return null;
+    }
 
-  const Navigation = () => (
-    <nav className="bg-gray-900 text-white p-4 sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto flex justify-between items-center">
-        <div className="flex items-center space-x-4">
-          <div className="text-xl font-bold text-red-500">IVTV</div>
-          <div className="text-sm text-gray-300">Summer Camp 2025</div>
-          {state.isAdmin && <div className="text-xs bg-red-600 px-2 py-1 rounded">ADMIN</div>}
-        </div>
-        <div className="hidden md:flex space-x-6">
-          {[
-            { tab: 'dashboard', label: 'Dashboard', icon: Calendar },
-            { tab: 'recaps', label: 'Recap Videos', icon: Video },
-            { tab: 'livestream', label: 'Live Stream', icon: Zap },
-            { tab: 'posts', label: 'Posts', icon: Camera },
-            { tab: 'community', label: 'Community', icon: Users },
-            ...(state.isAdmin ? [{ tab: 'calendar', label: 'Calendar', icon: Settings }] : [])
-          ].map(({ tab, label, icon: Icon }) => (
-            <button
-              key={tab}
-              onClick={() => updateState({ activeTab: tab })}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
-                state.activeTab === tab ? 'bg-red-600' : 'hover:bg-gray-800'
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              <span>{label}</span>
-            </button>
-          ))}
-          {state.isAdmin ? (
-            <button
-              onClick={() => updateState({ isAdmin: false, activeTab: 'dashboard' })}
-              className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors"
-            >
-              <X className="w-4 h-4" />
-              <span>Logout</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => updateState({ showAdminLogin: true })}
-              className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-800 transition-colors"
-            >
-              <span>Admin</span>
-            </button>
-          )}
-        </div>
-        <div className="md:hidden">
-          <button
-            onClick={() => updateState({ mobileMenuOpen: !state.mobileMenuOpen })}
-            className="p-2 rounded-lg hover:bg-gray-800"
-          >
-            {state.mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-        </div>
-      </div>
-    </nav>
-  );
+    function getCurrentWeek() {
+      const today = new Date();
+      for (let i = 0; i < appData.campCalendar.length; i++) {
+        const week = appData.campCalendar[i];
+        const start = new Date(week.start);
+        const end = new Date(week.end);
+        if (today >= start && today <= end) return { ...week, idx: i + 1 };
+      }
+      return null;
+    }
 
-  const Dashboard = () => {
-    const currentWeek = getCurrentWeek();
-    const nextWeek = getNextWeekStart();
-    
-    return (
-      <div className="space-y-6">
-        <div className="bg-gradient-to-r from-red-600 to-red-700 text-white p-6 rounded-xl">
-          <h1 className="text-3xl font-bold mb-2">
-            {state.homepageHeroTitle}
-            {state.isAdmin && (
-              <button
-                onClick={() => updateState({ editingHomepage: true })}
-                className="ml-2 px-2 py-1 rounded bg-white/20 hover:bg-white/40 text-xs"
-              >
-                Edit
-              </button>
-            )}
-          </h1>
-          <p className="text-red-100">{state.homepageHeroSubtitle}</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded-xl shadow-lg border">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">This Week</h3>
-              <Video className="w-5 h-5 text-red-500" />
-            </div>
-            <p className="text-gray-600 mb-4">
-              {currentWeek ? `Week ${currentWeek.idx}: ${currentWeek.theme}` : 'No current week'}
-            </p>
-          </div>
-
-          <div className="bg-white p-6 rounded-xl shadow-lg border">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Next Week Countdown</h3>
-              <Clock className="w-5 h-5 text-red-500" />
-            </div>
-            {nextWeek ? (
-              <div className="grid grid-cols-4 gap-2 text-center">
-                <div>
-                  <div className="text-2xl font-bold text-red-600">{timeLeft.days}</div>
-                  <div className="text-xs text-gray-500">DAYS</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-red-600">{timeLeft.hours}</div>
-                  <div className="text-xs text-gray-500">HRS</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-red-600">{timeLeft.minutes}</div>
-                  <div className="text-xs text-gray-500">MIN</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-red-600">{timeLeft.seconds}</div>
-                  <div className="text-xs text-gray-500">SEC</div>
-                </div>
-              </div>
-            ) : (
-              <p className="text-gray-500">No upcoming weeks</p>
-            )}
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-lg border">
-          <h3 className="text-xl font-semibold mb-4">Week Overview</h3>
-          <div className="grid gap-4">
-            {state.weekDescriptions.map((week, idx) => (
-              <div key={idx} className="p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-semibold text-gray-800">Week {week.week}: {week.title}</h4>
-                  {state.isAdmin && (
-                    <button
-                      onClick={() => updateState({ editingWeekDescriptions: true })}
-                      className="text-xs px-2 py-1 bg-gray-200 rounded hover:bg-gray-300"
-                    >
-                      Edit
-                    </button>
-                  )}
-                </div>
-                <p className="text-gray-600 text-sm">{week.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const RecapVideos = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Recap Videos</h2>
-        {state.isAdmin && (
-          <button
-            onClick={() => updateState({ showNewRecapForm: true })}
-            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 flex items-center space-x-2"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Add Video</span>
-          </button>
-        )}
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {state.recapVideos.map((video) => (
-          <div key={video.id} className="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div className="aspect-video">
-              <iframe
-                src={video.embedUrl}
-                className="w-full h-full"
-                frameBorder="0"
-                allowFullScreen
-                title={video.title}
-              />
-            </div>
-            <div className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold text-gray-800">{video.title}</h3>
-                  <p className="text-sm text-gray-500">Week {video.week}</p>
-                </div>
-                {state.isAdmin && (
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => updateState({ editingRecapVideo: video })}
-                      className="text-blue-600 hover:text-blue-800"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteRecapVideo(video.id)}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      <Trash className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  const LiveStream = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Live Stream</h2>
-        {state.isAdmin && (
-          <button
-            onClick={() => updateState({ editingLiveStream: true })}
-            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 flex items-center space-x-2"
-          >
-            <Settings className="w-4 h-4" />
-            <span>Configure Stream</span>
-          </button>
-        )}
-      </div>
+    function editHomepage() {
+      const newTitle = prompt('Enter new hero title:', appData.heroTitle);
+      const newSubtitle = prompt('Enter new hero subtitle:', appData.heroSubtitle);
       
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="p-4 bg-gray-50 border-b">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold">IVTV Live Programming</h3>
-            <div className={`flex items-center space-x-2 px-3 py-1 rounded-full text-sm ${
-              state.isLiveStreamActive 
-                ? 'bg-red-100 text-red-700' 
-                : 'bg-gray-100 text-gray-600'
-            }`}>
-              <div className={`w-2 h-2 rounded-full ${
-                state.isLiveStreamActive ? 'bg-red-500' : 'bg-gray-400'
-              }`} />
-              <span>{state.isLiveStreamActive ? 'LIVE' : 'OFFLINE'}</span>
-            </div>
-          </div>
-        </div>
-        
-        <div className="aspect-video bg-gray-900 flex items-center justify-center">
-          {state.isLiveStreamActive ? (
-            <iframe
-              src={state.liveStreamUrl}
-              className="w-full h-full"
-              frameBorder="0"
-              allowFullScreen
-              title="IVTV Live Stream"
-            />
-          ) : (
-            <div className="text-center text-white">
-              <Zap className="w-16 h-16 mx-auto mb-4 text-gray-500" />
-              <p className="text-lg">Stream offline</p>
-              <p className="text-sm text-gray-400">Check back later for live programming</p>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-
-  const Posts = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Posts & Updates</h2>
-        {state.isAdmin && (
-          <button
-            onClick={() => updateState({ showNewPostForm: true })}
-            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 flex items-center space-x-2"
-          >
-            <Upload className="w-4 h-4" />
-            <span>New Post</span>
-          </button>
-        )}
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {state.posts.map((post) => (
-          <div key={post.id} className="bg-white rounded-xl shadow-lg border overflow-hidden group hover:ring-2 hover:ring-red-400 transition cursor-pointer">
-            {post.thumbnail && (
-              <div className="relative">
-                <img src={post.thumbnail} alt={post.title} className="w-full h-48 object-cover" />
-                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button className="bg-red-600 text-white p-4 rounded-full hover:bg-red-700">
-                    <Play className="w-8 h-8" />
-                  </button>
-                </div>
-              </div>
-            )}
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-3">
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                  post.type === 'video' ? 'bg-red-100 text-red-800' :
-                  post.type === 'photo' ? 'bg-blue-100 text-blue-800' :
-                  'bg-green-100 text-green-800'
-                }`}>
-                  {post.type.toUpperCase()}
-                </span>
-                <span className="text-sm text-gray-500">{post.date.split('T')[0]}</span>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-3">{post.title}</h3>
-              <p className="text-gray-600 mb-4">{post.content}</p>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">By {post.author}</span>
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-1 text-red-500">
-                    <span>❤️</span>
-                    <span className="text-sm">{post.likes}</span>
-                  </div>
-                  <div className="flex items-center space-x-1 text-blue-500">
-                    <MessageCircle className="w-4 h-4" />
-                    <span className="text-sm">{post.comments}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
-  const Community = () => (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Community</h2>
-        {state.isAdmin && (
-          <button
-            onClick={() => updateState({ editingCommunity: true })}
-            className="px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200"
-          >
-            Edit
-          </button>
-        )}
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-lg border">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Instructors</h3>
-            {state.isAdmin && (
-              <button
-                onClick={() => updateState({ showNewInstructorForm: true })}
-                className="px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200 flex items-center space-x-1"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Add</span>
-              </button>
-            )}
-          </div>
-          <div className="space-y-4">
-            {state.instructors.map((inst) => (
-              <div key={inst.id} className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white font-semibold">
-                    {inst.name.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-800">{inst.name}</p>
-                    <p className="text-sm text-gray-600">{inst.title}</p>
-                    <p className="text-xs text-gray-500">{inst.email}</p>
-                  </div>
-                </div>
-                {state.isAdmin && (
-                  <button
-                    onClick={() => handleDeleteInstructor(inst.id)}
-                    className="text-red-600 hover:text-red-800"
-                  >
-                    <Trash className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-xl shadow-lg border">
-          <h3 className="text-lg font-semibold mb-4">Camp Stats</h3>
-          <div className="space-y-3">
-            {state.campStats.map((stat, idx) => (
-              <div key={idx} className="flex justify-between">
-                <span className="text-gray-600">{stat.label}</span>
-                <span className={`font-semibold ${stat.highlight ? 'text-red-600' : ''}`}>
-                  {stat.value}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const CalendarManagement = () => (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Calendar Management</h2>
-        <button
-          onClick={() => updateState({ editingCalendar: true })}
-          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 flex items-center space-x-2"
-        >
-          <Edit className="w-4 h-4" />
-          <span>Edit Calendar</span>
-        </button>
-      </div>
+      if (newTitle !== null) {
+        appData.heroTitle = newTitle;
+        document.getElementById('hero-title').textContent = newTitle;
+      }
+      if (newSubtitle !== null) {
+        appData.heroSubtitle = newSubtitle;
+        document.getElementById('hero-subtitle').textContent = newSubtitle;
+      }
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-lg border">
-          <h3 className="text-lg font-semibold mb-4">Current Status</h3>
-          <div className="space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Current Week:</span>
-              <span className="font-semibold">
-                {getCurrentWeek() ? `Week ${getCurrentWeek()?.idx}: ${getCurrentWeek()?.theme}` : 'No active week'}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Next Week:</span>
-              <span className="font-semibold">
-                {getNextWeekStart() ? getNextWeekStart()?.toLocaleDateString() : 'No upcoming weeks'}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Total Weeks:</span>
-              <span className="font-semibold">{state.campCalendar.length}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-lg border">
-          <h3 className="text-lg font-semibold mb-4">Time Remaining</h3>
-          {getNextWeekStart() ? (
-            <div className="grid grid-cols-4 gap-2 text-center">
-              <div>
-                <div className="text-2xl font-bold text-red-600">{timeLeft.days}</div>
-                <div className="text-xs text-gray-500">DAYS</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-red-600">{timeLeft.hours}</div>
-                <div className="text-xs text-gray-500">HRS</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-red-600">{timeLeft.minutes}</div>
-                <div className="text-xs text-gray-500">MIN</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-red-600">{timeLeft.seconds}</div>
-                <div className="text-xs text-gray-500">SEC</div>
-              </div>
-            </div>
-          ) : (
-            <p className="text-gray-500">No upcoming weeks</p>
-          )}
-        </div>
-      </div>
-
-      <div className="bg-white p-6 rounded-xl shadow-lg border">
-        <h3 className="text-lg font-semibold mb-4">Week Schedule</h3>
-        <div className="space-y-4">
-          {state.campCalendar.map((week, idx) => {
-            const start = new Date(week.start);
-            const end = new Date(week.end);
-            const today = new Date();
-            const isActive = today >= start && today <= end;
-            const isPast = today > end;
-            
-            return (
-              <div key={week.id} className={`p-4 rounded-lg border-l-4 ${
-                isActive ? 'bg-red-50 border-red-500' : 
-                isPast ? 'bg-gray-50 border-gray-300' : 
-                'bg-blue-50 border-blue-500'
-              }`}>
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-semibold">Week {idx + 1}: {week.theme}</h4>
-                  <div className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                    isActive ? 'bg-red-200 text-red-800' : 
-                    isPast ? 'bg-gray-200 text-gray-600' : 
-                    'bg-blue-200 text-blue-800'
-                  }`}>
-                    {isActive ? 'ACTIVE' : isPast ? 'COMPLETED' : 'UPCOMING'}
-                  </div>
-                </div>
-                <p className="text-sm text-gray-600 mb-2">{week.description}</p>
-                <div className="text-xs text-gray-500">
-                  {start.toLocaleDateString()} - {end.toLocaleDateString()}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderContent = () => {
-    switch (state.activeTab) {
-      case 'recaps': return <RecapVideos />;
-      case 'livestream': return <LiveStream />;
-      case 'posts': return <Posts />;
-      case 'community': return <Community />;
-      case 'calendar': return state.isAdmin ? <CalendarManagement /> : <Dashboard />;
-      default: return <Dashboard />;
+      saveData();
     }
-  };
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        {renderContent()}
-      </main>
+    function editWeekDescriptions() {
+      alert('Week descriptions editing - simplified for GitHub Pages compatibility');
+    }
+
+    function addRecapVideo() {
+      const title = prompt('Enter video title:');
+      const embedUrl = prompt('Enter YouTube embed URL:');
+      const week = prompt('Enter week number:');
       
-      {state.showAdminLogin && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-lg max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Admin Login</h3>
-            <input
-              type="password"
-              placeholder="Enter admin password"
-              value={state.adminPassword}
-              onChange={(e) => updateState({ adminPassword: e.target.value })}
-              onKeyPress={(e) => e.key === 'Enter' && handleAdminLogin()}
-              className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-red-500"
-              autoFocus
-            />
-            <div className="flex space-x-3">
-              <button
-                onClick={handleAdminLogin}
-                className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700"
-              >
-                Login
-              </button>
-              <button
-                onClick={() => updateState({ showAdminLogin: false, adminPassword: '' })}
-                className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400"
-              >
-                Cancel
-              </button>
+      if (title && embedUrl && week) {
+        const newVideo = {
+          id: appData.recapVideos.length + 1,
+          title,
+          embedUrl,
+          week: parseInt(week)
+        };
+        appData.recapVideos.push(newVideo);
+        renderRecapVideos();
+        saveData();
+      }
+    }
+
+    function configureLiveStream() {
+      const newUrl = prompt('Enter live stream URL:', appData.liveStreamUrl);
+      const isActive = confirm('Is the stream currently active?');
+      
+      if (newUrl !== null) {
+        appData.liveStreamUrl = newUrl;
+        appData.isLiveStreamActive = isActive;
+        updateLiveStream();
+        saveData();
+      }
+    }
+
+    function createNewPost() {
+      const title = prompt('Enter post title:');
+      const content = prompt('Enter post content:');
+      const type = prompt('Enter post type (video/photo/text):', 'text');
+      
+      if (title && content) {
+        const newPost = {
+          id: appData.posts.length + 1,
+          title,
+          content,
+          type,
+          author: 'Admin',
+          date: new Date().toISOString().split('T')[0],
+          likes: 0,
+          comments: 0
+        };
+        appData.posts.unshift(newPost);
+        renderPosts();
+        saveData();
+      }
+    }
+
+    function editCommunity() {
+      alert('Community editing - simplified for GitHub Pages compatibility');
+    }
+
+    function addInstructor() {
+      const name = prompt('Enter instructor name:');
+      const title = prompt('Enter instructor title:');
+      const email = prompt('Enter instructor email:');
+      
+      if (name && title && email) {
+        const newInstructor = {
+          id: appData.instructors.length + 1,
+          name,
+          title,
+          email
+        };
+        appData.instructors.push(newInstructor);
+        renderInstructors();
+        saveData();
+      }
+    }
+
+    function editCalendar() {
+      alert('Calendar editing - simplified for GitHub Pages compatibility');
+    }
+
+    function renderRecapVideos() {
+      const container = document.getElementById('recap-videos');
+      container.innerHTML = appData.recapVideos.map(video => `
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div class="aspect-video">
+            <iframe src="${video.embedUrl}" class="w-full h-full" frameborder="0" allowfullscreen title="${video.title}"></iframe>
+          </div>
+          <div class="p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-semibold text-gray-800">${video.title}</h3>
+                <p class="text-sm text-gray-500">Week ${video.week}</p>
+              </div>
             </div>
           </div>
         </div>
-      )}
+      `).join('');
+    }
 
-      {state.editingHomepage && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-lg max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Edit Homepage</h3>
-            <form onSubmit={handleEditHomepage}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Hero Title</label>
-                  <input name="heroTitle" defaultValue={state.homepageHeroTitle} required className="w-full p-3 border rounded-lg" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Hero Subtitle</label>
-                  <input name="heroSubtitle" defaultValue={state.homepageHeroSubtitle} required className="w-full p-3 border rounded-lg" />
-                </div>
-              </div>
-              <div className="flex space-x-3 mt-6">
-                <button type="submit" className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700">Update</button>
-                <button type="button" onClick={() => updateState({ editingHomepage: false })} className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg">Cancel</button>
-              </div>
-            </form>
+    function updateLiveStream() {
+      const container = document.getElementById('live-stream-container');
+      const status = document.getElementById('live-status');
+      
+      if (appData.isLiveStreamActive) {
+        container.innerHTML = `<iframe src="${appData.liveStreamUrl}" class="w-full h-full" frameborder="0" allowfullscreen title="IVTV Live Stream"></iframe>`;
+        status.innerHTML = '<div class="w-2 h-2 rounded-full bg-red-500"></div><span>LIVE</span>';
+        status.className = 'flex items-center space-x-2 px-3 py-1 rounded-full text-sm bg-red-100 text-red-700';
+      } else {
+        container.innerHTML = `
+          <div class="text-center text-white">
+            <svg class="w-16 h-16 mx-auto mb-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+            <p class="text-lg">Stream offline</p>
+            <p class="text-sm text-gray-400">Check back later for live programming</p>
           </div>
-        </div>
-      )}
+        `;
+        status.innerHTML = '<div class="w-2 h-2 rounded-full bg-gray-400"></div><span>OFFLINE</span>';
+        status.className = 'flex items-center space-x-2 px-3 py-1 rounded-full text-sm bg-gray-100 text-gray-600';
+      }
+    }
 
-      {state.showNewPostForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-lg max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">New Post</h3>
-            <form onSubmit={handleNewPost}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Type</label>
-                  <select name="type" className="w-full p-3 border rounded-lg">
-                    <option value="text">Text</option>
-                    <option value="photo">Photo</option>
-                    <option value="video">Video</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Title</label>
-                  <input name="title" required className="w-full p-3 border rounded-lg" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Content</label>
-                  <textarea name="content" required className="w-full p-3 border rounded-lg" rows={3} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Author</label>
-                  <input name="author" defaultValue="Admin" className="w-full p-3 border rounded-lg" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Thumbnail URL (optional)</label>
-                  <input name="thumbnail" className="w-full p-3 border rounded-lg" />
-                </div>
-              </div>
-              <div className="flex space-x-3 mt-6">
-                <button type="submit" className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700">Create Post</button>
-                <button type="button" onClick={() => updateState({ showNewPostForm: false })} className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg">Cancel</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {state.showNewRecapForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-lg max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Add Recap Video</h3>
-            <form onSubmit={handleNewRecapVideo}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Title</label>
-                  <input name="title" required className="w-full p-3 border rounded-lg" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">YouTube Embed URL</label>
-                  <input name="embedUrl" required className="w-full p-3 border rounded-lg" placeholder="https://www.youtube.com/embed/..." />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Week Number</label>
-                  <input name="week" type="number" required className="w-full p-3 border rounded-lg" />
-                </div>
-              </div>
-              <div className="flex space-x-3 mt-6">
-                <button type="submit" className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700">Add Video</button>
-                <button type="button" onClick={() => updateState({ showNewRecapForm: false })} className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg">Cancel</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {state.editingRecapVideo && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-lg max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Edit Recap Video</h3>
-            <form onSubmit={handleEditRecapVideo}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Title</label>
-                  <input name="title" defaultValue={state.editingRecapVideo.title} required className="w-full p-3 border rounded-lg" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">YouTube Embed URL</label>
-                  <input name="embedUrl" defaultValue={state.editingRecapVideo.embedUrl} required className="w-full p-3 border rounded-lg" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Week Number</label>
-                  <input name="week" type="number" defaultValue={state.editingRecapVideo.week} required className="w-full p-3 border rounded-lg" />
-                </div>
-              </div>
-              <div className="flex space-x-3 mt-6">
-                <button type="submit" className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700">Update</button>
-                <button type="button" onClick={() => updateState({ editingRecapVideo: null })} className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg">Cancel</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {state.editingLiveStream && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-lg max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Configure Live Stream</h3>
-            <form onSubmit={handleUpdateLiveStream}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Stream URL</label>
-                  <input name="streamUrl" defaultValue={state.liveStreamUrl} required className="w-full p-3 border rounded-lg" placeholder="https://www.youtube.com/embed/..." />
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input name="isActive" type="checkbox" defaultChecked={state.isLiveStreamActive} className="rounded" />
-                  <label className="text-sm font-medium">Stream is currently active</label>
-                </div>
-              </div>
-              <div className="flex space-x-3 mt-6">
-                <button type="submit" className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700">Update</button>
-                <button type="button" onClick={() => updateState({ editingLiveStream: false })} className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg">Cancel</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {state.editingWeekDescriptions && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4">Edit Week Descriptions</h3>
-            <form onSubmit={handleUpdateWeekDescriptions}>
-              <div className="space-y-4">
-                {state.weekDescriptions.map((week, idx) => (
-                  <div key={idx} className="border rounded-lg p-4">
-                    <h4 className="font-medium mb-2">Week {week.week}</h4>
-                    <div className="space-y-2">
-                      <input name={`weekTitle${idx}`} defaultValue={week.title} placeholder="Week title" className="w-full p-2 border rounded" />
-                      <textarea name={`weekDesc${idx}`} defaultValue={week.description} placeholder="Week description" rows={3} className="w-full p-2 border rounded" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="flex space-x-3 mt-6">
-                <button type="submit" className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700">Update</button>
-                <button type="button" onClick={() => updateState({ editingWeekDescriptions: false })} className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg">Cancel</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {state.editingCommunity && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4">Edit Camp Stats</h3>
-            <form onSubmit={handleEditCommunity}>
-              <div className="space-y-4">
-                <h4 className="font-medium mb-3">Camp Stats</h4>
-                {state.campStats.map((stat, idx) => (
-                  <div key={idx} className="grid grid-cols-3 gap-2 mb-2">
-                    <input name={`statLabel${idx}`} defaultValue={stat.label} placeholder="Label" className="p-2 border rounded" />
-                    <input name={`statValue${idx}`} defaultValue={stat.value} placeholder="Value" className="p-2 border rounded" />
-                    <label className="flex items-center space-x-2">
-                      <input name={`statHighlight${idx}`} type="checkbox" defaultChecked={stat.highlight} />
-                      <span className="text-sm">Highlight</span>
-                    </label>
-                  </div>
-                ))}
-              </div>
-              <div className="flex space-x-3 mt-6">
-                <button type="submit" className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700">Update</button>
-                <button type="button" onClick={() => updateState({ editingCommunity: false })} className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg">Cancel</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {state.showNewInstructorForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-lg max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Add New Instructor</h3>
-            <form onSubmit={handleNewInstructor}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Name</label>
-                  <input name="name" required className="w-full p-3 border rounded-lg" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Title</label>
-                  <input name="title" required className="w-full p-3 border rounded-lg" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Email</label>
-                  <input name="email" type="email" required className="w-full p-3 border rounded-lg" />
-                </div>
-              </div>
-              <div className="flex space-x-3 mt-6">
-                <button type="submit" className="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700">Add Instructor</button>
-                <button type="button" onClick={() => updateState({ showNewInstructorForm: false })} className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg">Cancel</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {state.editingCalendar && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-lg max-w-5xl w-full max-h-[95vh] flex flex-col">
-            <div className="p-6 border-b flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Edit Camp Calendar</h3>
-              <div className="flex space-x-2">
-                <button
-                  type="button"
-                  onClick={addNewWeek}
-                  className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 flex items-center space-x-1"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Add Week</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => updateState({ editingCalendar: false })}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+    function renderPosts() {
+      const container = document.getElementById('posts-container');
+      container.innerHTML = appData.posts.map(post => `
+        <div class="bg-white rounded-xl shadow-lg border overflow-hidden group hover:ring-2 hover:ring-red-400 transition cursor-pointer">
+          ${post.thumbnail ? `<img src="${post.thumbnail}" alt="${post.title}" class="w-full h-48 object-cover">` : ''}
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-3">
+              <span class="px-2 py-1 rounded-full text-xs font-semibold ${
+                post.type === 'video' ? 'bg-red-100 text-red-800' :
+                post.type === 'photo' ? 'bg-blue-100 text-blue-800' :
+                'bg-green-100 text-green-800'
+              }">${post.type.toUpperCase()}</span>
+              <span class="text-sm text-gray-500">${post.date}</span>
             </div>
-            
-            <div className="flex-1 overflow-y-auto p-6">
-              <form onSubmit={handleEditCalendar} id="calendar-form">
-                <div className="space-y-4">
-                  {state.campCalendar.map((week, idx) => (
-                    <div key={week.id} className="border rounded-lg p-4 relative">
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="font-medium">Week {idx + 1}</h4>
-                        {state.campCalendar.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => removeWeek(week.id)}
-                            className="text-red-600 hover:text-red-800"
-                          >
-                            <Trash className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium mb-1">Start Date</label>
-                          <input 
-                            name={`weekStart${idx}`} 
-                            type="date" 
-                            defaultValue={week.start} 
-                            required 
-                            className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-red-500" 
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-1">End Date</label>
-                          <input 
-                            name={`weekEnd${idx}`} 
-                            type="date" 
-                            defaultValue={week.end} 
-                            required 
-                            className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-red-500" 
-                          />
-                        </div>
-                      </div>
-                      <div className="mt-3">
-                        <label className="block text-sm font-medium mb-1">Theme</label>
-                        <input 
-                          name={`weekTheme${idx}`} 
-                          defaultValue={week.theme} 
-                          required 
-                          className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-red-500" 
-                          placeholder="e.g., Camera & Lighting Fundamentals"
-                        />
-                      </div>
-                      <div className="mt-3">
-                        <label className="block text-sm font-medium mb-1">Description</label>
-                        <textarea 
-                          name={`weekDescription${idx}`} 
-                          defaultValue={week.description} 
-                          rows={2} 
-                          className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-red-500" 
-                          placeholder="Brief description of the week's activities and learning objectives"
-                        />
-                      </div>
-                    </div>
-                  ))}
+            <h3 class="text-xl font-semibold text-gray-800 mb-3">${post.title}</h3>
+            <p class="text-gray-600 mb-4">${post.content}</p>
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-gray-500">By ${post.author}</span>
+              <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-1 text-red-500">
+                  <span>❤️</span>
+                  <span class="text-sm">${post.likes}</span>
                 </div>
-              </form>
-            </div>
-            
-            <div className="p-6 border-t flex space-x-3">
-              <button 
-                type="submit" 
-                form="calendar-form"
-                className="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors"
-              >
-                Update Calendar
-              </button>
-              <button 
-                type="button" 
-                onClick={() => updateState({ editingCalendar: false })} 
-                className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors"
-              >
-                Cancel
-              </button>
+                <div class="flex items-center space-x-1 text-blue-500">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                  </svg>
+                  <span class="text-sm">${post.comments}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      )}
-    </div>
-  );
-}
+      `).join('');
+    }
 
-export default App;
+    function renderInstructors() {
+      const container = document.getElementById('instructors-list');
+      container.innerHTML = appData.instructors.map(instructor => `
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white font-semibold">
+              ${instructor.name.charAt(0)}
+            </div>
+            <div>
+              <p class="font-semibold text-gray-800">${instructor.name}</p>
+              <p class="text-sm text-gray-600">${instructor.title}</p>
+              <p class="text-xs text-gray-500">${instructor.email}</p>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function saveData() {
+      localStorage.setItem('ivtvCampData', JSON.stringify(appData));
+    }
+
+    function loadData() {
+      const saved = localStorage.getItem('ivtvCampData');
+      if (saved) {
+        try {
+          appData = { ...appData, ...JSON.parse(saved) };
+          document.getElementById('hero-title').textContent = appData.heroTitle;
+          document.getElementById('hero-subtitle').textContent = appData.heroSubtitle;
+          renderRecapVideos();
+          updateLiveStream();
+          renderPosts();
+          renderInstructors();
+        } catch (e) {
+          console.error('Error loading saved data:', e);
+        }
+      }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      loadData();
+      setInterval(updateCountdown, 1000);
+      updateCountdown();
+    });
+
+    // Handle keyboard events
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && document.getElementById('admin-login-modal').classList.contains('hidden') === false) {
+        adminLogin();
+      }
+    });
+  </script>
+</body>
+</html>
+ 
